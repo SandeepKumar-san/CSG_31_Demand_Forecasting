@@ -1,0 +1,9 @@
+{
+  "seed": 42,
+  "best_val_loss": 748.5766105441486,
+  "train_loss": 1406.5928642314934,
+  "val_loss": 748.5766105441486,
+  "epochs_trained": 50,
+  "total_time": 1396.7059743404388,
+  "n_parameters": 256865
+}
