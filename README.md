@@ -144,12 +144,6 @@ All hyperparameters are in `experiments/config.yaml`:
 - `training.learning_rate`: 0.001
 - See `config.yaml` for full list
 
-## Citation
 
-```bibtex
-@article{adaptivefusion2026,
-  title={Adaptive Temporal-Structural Fusion for Supply Chain
-         Demand Forecasting with Risk-Aware Decision Support},
-  year={2026}
-}
+
 ```
