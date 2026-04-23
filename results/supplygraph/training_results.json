@@ -1,0 +1,10 @@
+{
+  "dataset": "supplygraph",
+  "seed": 1337,
+  "best_val_loss": 0.4713200181722641,
+  "train_loss": 0.7413443543016911,
+  "val_loss": 0.523521519520066,
+  "epochs_trained": 67,
+  "total_time": 332.36244678497314,
+  "n_parameters": 948017
+}

@@ -1,0 +1,16 @@
+edge_type,type_id,rmse_full,rmse_ablated,degradation_pct
+supply_chain_input,0,0.631712,0.639892,1.2949
+recycling_secondary_source,10,0.631712,0.634883,0.5019
+construction_coproduction,3,0.631712,0.634169,0.3889
+functional_coating,14,0.631712,0.633169,0.2305
+price_correlation,9,0.631712,0.632786,0.1699
+refractory_industrial,13,0.631712,0.632751,0.1644
+byproduct_coproduction,11,0.631712,0.632067,0.0561
+critical_mineral_designation,7,0.631712,0.631754,0.0065
+catalyst_role,12,0.631712,0.631512,-0.0318
+electronics_coproduction,4,0.631712,0.630755,-0.1516
+battery_coproduction,6,0.631712,0.630745,-0.1532
+substitution,5,0.631712,0.629271,-0.3865
+geopolitical_supply_risk,8,0.631712,0.628207,-0.5550
+alloy_components,2,0.631712,0.623996,-1.2215
+technology_cluster,1,0.631712,0.617811,-2.2005

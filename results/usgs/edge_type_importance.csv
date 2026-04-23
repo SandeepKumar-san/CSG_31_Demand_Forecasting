@@ -1,0 +1,16 @@
+rank,edge_type,type_id,mean_attention,std_attention,count
+1,critical_mineral_designation,7,0.020704,0.097318,1936
+2,geopolitical_supply_risk,8,0.017959,0.031262,1512
+3,refractory_industrial,13,0.017637,0.033718,264
+4,construction_coproduction,3,0.016034,0.058695,2568
+5,supply_chain_input,0,0.015101,0.026864,14488
+6,functional_coating,14,0.013464,0.039090,296
+7,recycling_secondary_source,10,0.012925,0.033525,1856
+8,byproduct_coproduction,11,0.011235,0.018162,968
+9,price_correlation,9,0.010832,0.026225,3728
+10,technology_cluster,1,0.008832,0.028309,8624
+11,substitution,5,0.008386,0.035861,3920
+12,battery_coproduction,6,0.004617,0.013654,1616
+13,alloy_components,2,0.003080,0.011066,5088
+14,electronics_coproduction,4,0.003003,0.006967,2896
+15,catalyst_role,12,0.000917,0.002687,448

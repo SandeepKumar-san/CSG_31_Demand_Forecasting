@@ -1,93 +1,128 @@
 # ============================================================
 # Adaptive Temporal-Structural Fusion Model Configuration
 # ============================================================
-# All hyperparameters for reproducible experiments.
-# Seed = 42 is used globally for research reproducibility.
+# ALL hyperparameters are now explicit and dataset-specific.
+# ZERO hardcoded overrides in the Python code.
 # ============================================================
 
-reproducibility:
-  seed: 42
-  deterministic: true
-  num_workers: 0          # 0 for full reproducibility
-  cuda_deterministic: true
+# ---- Global Settings (Shared across all datasets) ----
+common:
+  dataset: "supplygraph"
+  reproducibility:
+    seed: 42
+    deterministic: true
+    num_workers: 0
+    cuda_deterministic: true
 
-# ---- Data Configuration ----
-data:
-  primary_source: "supplygraph"   # Options: supplygraph, usgs
-  # NOTE: No synthetic fallback — this is for a research paper.
-  # Download SupplyGraph from Kaggle:
-  # https://www.kaggle.com/datasets/azminetoushikwasi/supplygraph-supply-chain-planning-using-gnns
+  output:
+    results_dir: "results/"
+    plots_dir: "results/plots/"
+    risk_reports_dir: "results/risk_reports/"
+    checkpoints_dir: "results/checkpoints/"
+    logs_dir: "results/logs/"
+
+  model:
+    risk_scoring:
+      budget_threshold: 100000
+      lead_time_safety_factor: 1.5
+      criticality_threshold: 0.7
+
+# ---- Dataset-Specific Configurations ----
+datasets:
   supplygraph:
-    path: "data/raw/supplygraph/"
-    n_products: 41              # Real dataset has 41 nodes
-    n_timepoints: 221           # 221 days (2023-01-01 to 2023-08-09)
-  usgs:   # Placeholder for future USGS mineral commodity integration
-    path: "data/raw/usgs/"
-    n_commodities: 90
-    start_year: 2000
-    end_year: 2023
-    enabled: false              # Set to true when data available
-  train_ratio: 0.7
-  val_ratio: 0.15
-  test_ratio: 0.15
-  sequence_length: 30           # Lookback window (30 days)
-  forecast_horizons: [1, 3, 6, 12]
-  quantiles: [0.1, 0.5, 0.9]
+    data:
+      path: "data/raw/supplygraph/"
+      n_products: 40
+      n_timepoints: 221
+      sequence_length: 30
+      forecast_horizons: [1, 3, 6, 12]
+      features: ['sales_order', 'production', 'factory_issue', 'delivery', 'operational_mask']
+      quantiles: [0.1, 0.5, 0.9]
+      train_ratio: 0.7
+      val_ratio: 0.15
+      test_ratio: 0.15
 
-# ---- Model Configuration ----
-model:
-  hidden_dim: 64
-  tft:
-    hidden_dim: 64
-    num_layers: 2
-    num_heads: 4
-    dropout: 0.1
-    num_static_features: 2      # material_type, avg_lead_time
-    num_known_features: 2       # time_idx, planned_orders
-    num_unknown_features: 4     # demand, production, factory_issue, delivery
-  gat:
-    hidden_dim: 64
-    num_layers: 2
-    heads: 4
-    dropout: 0.1
-    num_node_features: 4        # demand_avg, price_level, capacity_util, lead_time
-    num_edge_features: 4        # edge_type one-hot (4 types)
-  fusion:
-    num_material_types: 8       # will be overridden by actual dataset
-    num_horizons: 4
-    material_embed_dim: 16
-    horizon_embed_dim: 16
-  risk_scoring:
-    budget_threshold: 100000
-    lead_time_safety_factor: 1.5
-    criticality_threshold: 0.7
+    model:
+      hidden_dim: 128
+      tft:
+        hidden_dim: 128
+        num_layers: 2
+        num_heads: 4
+        dropout: 0.2
+        num_static_features: 2
+        num_known_features: 2
+      gat:
+        hidden_dim: 128
+        num_layers: 2
+        heads: 4
+        dropout: 0.2
+        num_node_features: 4
+      fusion:
+        material_embed_dim: 16
+        horizon_embed_dim: 16
 
-# ---- Training Configuration ----
-training:
-  epochs: 50
-  batch_size: 16
-  learning_rate: 0.001
-  weight_decay: 0.00001
-  gradient_clip: 1.0
-  early_stopping_patience: 10
-  scheduler:
-    type: "ReduceLROnPlateau"
-    factor: 0.5
-    patience: 10
-    min_lr: 0.00001
-  alpha_reg_weight: 0.01       # Encourage diverse alpha values
-  debug: false                  # Set true for verbose alpha/gradient prints
+    training:
+      epochs: 1000
+      batch_size: 64
+      learning_rate: 0.001
+      weight_decay: 0.0001
+      gradient_clip: 1.0
+      early_stopping_patience: 50
+      alpha_reg_weight: 0.1
+      quantile_loss_weight: 0.3
+      scheduler:
+        type: "ReduceLROnPlateau"
+        factor: 0.3
+        patience: 10
+        min_lr: 0.000001
 
-# ---- Risk Scoring Configuration (top-level per spec) ----
-risk_scoring:
-  budget_threshold: 100000
-  lead_time_safety_factor: 1.5
-  criticality_threshold: 0.7
+  usgs:
+    data:
+      path: "data/processed/usgs/"
+      raw_path: "data/raw/usgs/"
+      enabled: true
+      sequence_length: 1
+      forecast_horizons: [1]
+      rolling_window_cv: true
+      n_cv_folds: 2
+      features: ['Production', 'Consumption', 'Imports', 'Exports', 'Price',
+                 'Stocks', 'Capacity', 'Sales', 'Reserves', 'Supply',
+                 'Employment', 'WorldProduction']
+      quantiles: [0.1, 0.5, 0.9]
+      train_ratio: 0.7
+      val_ratio: 0.15
+      test_ratio: 0.15
 
-# ---- Output Configuration ----
-output:
-  results_dir: "results/"
-  plots_dir: "results/plots/"
-  risk_reports_dir: "results/risk_reports/"
-  checkpoints_dir: "results/checkpoints/"
-  logs_dir: "results/logs/"
+    model:
+      hidden_dim: 64
+      tft:
+        hidden_dim: 64
+        num_layers: 2
+        num_heads: 4
+        dropout: 0.3
+        num_static_features: 2
+        num_known_features: 2
+      gat:
+        hidden_dim: 64
+        num_layers: 2
+        heads: 4
+        dropout: 0.3
+        num_node_features: 4
+      fusion:
+        material_embed_dim: 16
+        horizon_embed_dim: 16
+
+    training:
+      epochs: 1000
+      batch_size: 8
+      learning_rate: 0.001
+      weight_decay: 0.001
+      gradient_clip: 1.0
+      early_stopping_patience: 50
+      alpha_reg_weight: 0.05
+      quantile_loss_weight: 0.3
+      scheduler:
+        type: "ReduceLROnPlateau"
+        factor: 0.3
+        patience: 10
+        min_lr: 0.00001

@@ -31,12 +31,11 @@ def get_data_loader(config: dict):
     if source == "supplygraph":
         return SupplyGraphLoader(config)
     elif source == "usgs":
-        if config["data"]["usgs"].get("enabled", False):
+        if config["data"].get("usgs", {}).get("enabled", False):
             from src.data.usgs_loader import USGSLoader
             return USGSLoader(config)
         else:
-            print("⚠️ USGS data not yet enabled. Using SupplyGraph.")
-            return SupplyGraphLoader(config)
+            raise ValueError("USGS data requested but not enabled in config. Set data.usgs.enabled=true.")
     else:
         raise ValueError(
             f"Unknown data source: '{source}'. "

@@ -9,18 +9,18 @@ Assembles all 5 layers into a single nn.Module:
   Layer 4: Fused Demand Representation
   Layer 5: Risk Scoring & Decision
 
-Forward: raw batch → {forecasts, alpha_weights, risk_assessment}
+Forward: raw batch -> {forecasts, alpha_weights, risk_assessment}
 """
 
 import torch
 import torch.nn as nn
 from typing import Any, Dict, List, Optional
 
-from src.models.tft_branch import TFTBranch
-from src.models.gat_branch import GATBranch
-from src.models.fusion_layer import AdaptiveFusionLayer
-from src.models.fused_representation import FusedDemandRepresentation
-from src.models.risk_decision_layer import RiskScoringLayer
+from .tft_branch import TFTBranch
+from .gat_branch import GATBranch
+from .fusion_layer import AdaptiveFusionLayer
+from .fused_representation import FusedDemandRepresentation
+from .risk_decision_layer import RiskScoringLayer
 
 
 class AdaptiveFusionForecaster(nn.Module):
@@ -38,7 +38,7 @@ class AdaptiveFusionForecaster(nn.Module):
     def __init__(self, config: dict, seed: int = 42) -> None:
         super().__init__()
         self.config = config
-        self.hidden_dim = config.get("model", {}).get("hidden_dim", 64)
+        self.hidden_dim = config["model"]["hidden_dim"]
 
         # Set seed before weight initialization
         torch.manual_seed(seed)
@@ -57,6 +57,13 @@ class AdaptiveFusionForecaster(nn.Module):
 
         # ---- Layer 5: Risk Scoring & Decision ----
         self.risk_layer = RiskScoringLayer(config)
+
+        # ---- Dimension Audit ----
+        print(f"\n[Model Audit] Architecture build confirmed:")
+        print(f"  - Hidden Dimension:    {self.hidden_dim}")
+        print(f"  - TFT Branch:         {config['model']['tft']['num_layers']} layers, {config['model']['tft']['num_heads']} heads")
+        print(f"  - GAT Branch:         {config['model']['gat']['num_layers']} layers, {config['model']['gat']['heads']} heads")
+        print(f"  - Risk Layer:         ENABLED")
 
         # Apply deterministic weight initialization
         self.apply(self._init_weights)
@@ -131,7 +138,9 @@ class AdaptiveFusionForecaster(nn.Module):
         gat_out = self.gat(
             batch["graph_x"].to(device),
             batch["graph_edge_index"].to(device),
-            batch.get("graph_edge_attr", None),
+            edge_attr=batch.get("graph_edge_attr", None),
+            edge_type=batch.get("graph_edge_type", None),
+            edge_weight=batch.get("graph_edge_weight", None),
         )
         # Map structural embeddings from graph nodes to batch items
         product_ids = batch["product_id"]
@@ -192,10 +201,10 @@ class AdaptiveFusionForecaster(nn.Module):
         Forward pass with a fixed fusion weight (for baseline comparison).
 
         Used in evaluation to compare:
-          - alpha=1.0 → TFT-only
-          - alpha=0.0 → GAT-only
-          - alpha=0.5 → Fixed fusion
-          - alpha=learned → Adaptive fusion (normal forward)
+          - alpha=1.0 -> TFT-only
+          - alpha=0.0 -> GAT-only
+          - alpha=0.5 -> Fixed fusion
+          - alpha=learned -> Adaptive fusion (normal forward)
 
         Args:
             batch: Same as forward().
@@ -219,7 +228,9 @@ class AdaptiveFusionForecaster(nn.Module):
         gat_out = self.gat(
             batch["graph_x"].to(device),
             batch["graph_edge_index"].to(device),
-            batch.get("graph_edge_attr", None),
+            edge_attr=batch.get("graph_edge_attr", None),
+            edge_type=batch.get("graph_edge_type", None),
+            edge_weight=batch.get("graph_edge_weight", None),
         )
         product_ids = batch["product_id"]
         h_structural = gat_out["structural_embedding"][product_ids.long()]

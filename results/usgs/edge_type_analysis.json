@@ -1,0 +1,186 @@
+{
+  "importance": {
+    "supply_chain_input": {
+      "type_id": 0,
+      "mean_attention": 0.015101254369513543,
+      "std_attention": 0.026864436960827312,
+      "count": 14488
+    },
+    "technology_cluster": {
+      "type_id": 1,
+      "mean_attention": 0.0088321803543838,
+      "std_attention": 0.02830870575452042,
+      "count": 8624
+    },
+    "alloy_components": {
+      "type_id": 2,
+      "mean_attention": 0.0030796056374718136,
+      "std_attention": 0.01106624160307247,
+      "count": 5088
+    },
+    "construction_coproduction": {
+      "type_id": 3,
+      "mean_attention": 0.016033737357527944,
+      "std_attention": 0.05869536173207456,
+      "count": 2568
+    },
+    "electronics_coproduction": {
+      "type_id": 4,
+      "mean_attention": 0.0030031790546125,
+      "std_attention": 0.0069667677258818915,
+      "count": 2896
+    },
+    "substitution": {
+      "type_id": 5,
+      "mean_attention": 0.008386327189027168,
+      "std_attention": 0.035860981971438395,
+      "count": 3920
+    },
+    "battery_coproduction": {
+      "type_id": 6,
+      "mean_attention": 0.004617218455461967,
+      "std_attention": 0.013654380746873224,
+      "count": 1616
+    },
+    "critical_mineral_designation": {
+      "type_id": 7,
+      "mean_attention": 0.02070361306299268,
+      "std_attention": 0.09731820434032115,
+      "count": 1936
+    },
+    "geopolitical_supply_risk": {
+      "type_id": 8,
+      "mean_attention": 0.017958778216192964,
+      "std_attention": 0.031261713468499354,
+      "count": 1512
+    },
+    "price_correlation": {
+      "type_id": 9,
+      "mean_attention": 0.01083168231628683,
+      "std_attention": 0.026225125577369966,
+      "count": 3728
+    },
+    "recycling_secondary_source": {
+      "type_id": 10,
+      "mean_attention": 0.012925124057581908,
+      "std_attention": 0.033524614917480135,
+      "count": 1856
+    },
+    "byproduct_coproduction": {
+      "type_id": 11,
+      "mean_attention": 0.01123470778291764,
+      "std_attention": 0.018161974897838565,
+      "count": 968
+    },
+    "catalyst_role": {
+      "type_id": 12,
+      "mean_attention": 0.0009174274379932155,
+      "std_attention": 0.0026866247565298504,
+      "count": 448
+    },
+    "refractory_industrial": {
+      "type_id": 13,
+      "mean_attention": 0.017637219063269156,
+      "std_attention": 0.033717829233214966,
+      "count": 264
+    },
+    "functional_coating": {
+      "type_id": 14,
+      "mean_attention": 0.013464267328074769,
+      "std_attention": 0.03909042569937568,
+      "count": 296
+    }
+  },
+  "ablation": {
+    "supply_chain_input": {
+      "type_id": 0,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6398923993110657,
+      "degradation_pct": 1.2948870657164835
+    },
+    "technology_cluster": {
+      "type_id": 1,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6178114414215088,
+      "degradation_pct": -2.2005258164080987
+    },
+    "alloy_components": {
+      "type_id": 2,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6239962577819824,
+      "degradation_pct": -1.221470157314668
+    },
+    "construction_coproduction": {
+      "type_id": 3,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.634169340133667,
+      "degradation_pct": 0.3889275111583133
+    },
+    "electronics_coproduction": {
+      "type_id": 4,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6307550072669983,
+      "degradation_pct": -0.1515609561313922
+    },
+    "substitution": {
+      "type_id": 5,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6292709112167358,
+      "degradation_pct": -0.38649317593563387
+    },
+    "battery_coproduction": {
+      "type_id": 6,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6307447552680969,
+      "degradation_pct": -0.15318384627984516
+    },
+    "critical_mineral_designation": {
+      "type_id": 7,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.63175368309021,
+      "degradation_pct": 0.006529302225171101
+    },
+    "geopolitical_supply_risk": {
+      "type_id": 8,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6282066106796265,
+      "degradation_pct": -0.554971818323864
+    },
+    "price_correlation": {
+      "type_id": 9,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6327858567237854,
+      "degradation_pct": 0.16992225978772596
+    },
+    "recycling_secondary_source": {
+      "type_id": 10,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.634882926940918,
+      "degradation_pct": 0.5018882138169093
+    },
+    "byproduct_coproduction": {
+      "type_id": 11,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6320669054985046,
+      "degradation_pct": 0.05611237042354414
+    },
+    "catalyst_role": {
+      "type_id": 12,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6315118670463562,
+      "degradation_pct": -0.03175014738107046
+    },
+    "refractory_industrial": {
+      "type_id": 13,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6327506899833679,
+      "degradation_pct": 0.16435536916221882
+    },
+    "functional_coating": {
+      "type_id": 14,
+      "rmse_full": 0.6317124366760254,
+      "rmse_ablated": 0.6331686973571777,
+      "degradation_pct": 0.23052588434303523
+    }
+  }
+}

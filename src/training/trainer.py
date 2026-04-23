@@ -8,6 +8,7 @@ Features:
   - Best model checkpointing
   - Epoch-level metric logging
   - Alpha statistics tracking
+  - LR stats tracking
 
 Designed for research reproducibility: identical loss curves across runs.
 """
@@ -50,20 +51,21 @@ class ReproducibleTrainer:
         self.seed_manager = seed_manager
         self.device = device
 
-        train_cfg = config.get("training", {})
-        self.epochs = train_cfg.get("epochs", 50)
-        self.lr = train_cfg.get("learning_rate", 1e-3)
-        self.weight_decay = train_cfg.get("weight_decay", 1e-5)
-        self.grad_clip = train_cfg.get("gradient_clip", 1.0)
-        self.patience = train_cfg.get("early_stopping_patience", 10)
-        alpha_reg = train_cfg.get("alpha_reg_weight", 0.01)
-
-        quantiles = config.get("data", {}).get("quantiles", [0.1, 0.5, 0.9])
+        train_cfg = config["training"]
+        self.epochs = train_cfg["epochs"]
+        self.lr = train_cfg["learning_rate"]
+        self.weight_decay = train_cfg["weight_decay"]
+        self.grad_clip = train_cfg["gradient_clip"]
+        self.patience = train_cfg["early_stopping_patience"]
+        alpha_reg = train_cfg["alpha_reg_weight"]
+        q_weight = train_cfg.get("quantile_loss_weight", 0.3)
+        quantiles = config["data"]["quantiles"]
 
         # ---- Loss function ----
         self.criterion = AdaptiveFusionLoss(
             quantiles=quantiles,
             alpha_reg_weight=alpha_reg,
+            quantile_loss_weight=q_weight,
         )
 
         # ---- Optimizer (re-seed before creation for reproducibility) ----
@@ -75,19 +77,27 @@ class ReproducibleTrainer:
         )
 
         # ---- Scheduler ----
-        sched_cfg = train_cfg.get("scheduler", {})
+        sched_cfg = train_cfg["scheduler"]
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             self.optimizer,
             mode="min",
-            factor=sched_cfg.get("factor", 0.5),
-            patience=sched_cfg.get("patience", 10),
-            min_lr=sched_cfg.get("min_lr", 1e-5),
+            factor=sched_cfg["factor"],
+            patience=sched_cfg["patience"],
+            min_lr=sched_cfg["min_lr"],
         )
 
+        # ---- Training Audit ----
+        print(f"\n[Training Audit] Strict configuration active:")
+        print(f"  - Learning Rate:      {self.lr}")
+        print(f"  - Alpha Reg Weight:   {alpha_reg}")
+        print(f"  - Quantile Weight:    {q_weight}")
+        print(f"  - Early Stopping:     {self.patience} epochs")
+        print(f"  - Scheduler:          {sched_cfg['type']} (factor={sched_cfg['factor']}, patience={sched_cfg['patience']})")
+
         # ---- Output dirs ----
-        out_cfg = config.get("output", {})
-        self.checkpoint_dir = out_cfg.get("checkpoints_dir", "results/checkpoints/")
-        self.logs_dir = out_cfg.get("logs_dir", "results/logs/")
+        out_cfg = config["output"]
+        self.checkpoint_dir = out_cfg["checkpoints_dir"]
+        self.logs_dir = out_cfg["logs_dir"]
         os.makedirs(self.checkpoint_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
 
@@ -100,8 +110,10 @@ class ReproducibleTrainer:
             "alpha_mean": [],
             "alpha_std": [],
             "lr": [],
+            "alpha_by_category": [],
         }
         self.best_val_loss = float("inf")
+        self.best_epoch = 0
         self.epochs_without_improvement = 0
 
     def train_epoch(
@@ -109,14 +121,9 @@ class ReproducibleTrainer:
         train_loader: DataLoader,
         graph_data,
         epoch: int,
-    ) -> Dict[str, float]:
+    ) -> Dict[str, Any]:
         """
         Train for one epoch with deterministic seeding.
-
-        Args:
-            train_loader: Training DataLoader.
-            graph_data: PyTorch Geometric Data object.
-            epoch: Current epoch number.
 
         Returns:
             Dictionary of epoch metrics.
@@ -128,6 +135,7 @@ class ReproducibleTrainer:
         total_loss = 0.0
         total_forecast_loss = 0.0
         all_alphas = []
+        all_mat_types = []
         num_batches = 0
 
         for batch_idx, batch in enumerate(train_loader):
@@ -164,6 +172,7 @@ class ReproducibleTrainer:
             total_loss += loss.item()
             total_forecast_loss += loss_dict["forecast_loss"].item()
             all_alphas.append(output["alpha"].detach().cpu())
+            all_mat_types.append(batch["material_type"].detach().cpu())
             num_batches += 1
 
         # Compute epoch statistics
@@ -171,14 +180,22 @@ class ReproducibleTrainer:
         avg_forecast_loss = total_forecast_loss / max(num_batches, 1)
 
         alphas_cat = torch.cat(all_alphas, dim=0)
+        types_cat = torch.cat(all_mat_types, dim=0)
         alpha_mean = alphas_cat.mean().item()
         alpha_std = alphas_cat.std().item()
+        
+        alpha_by_cat = {}
+        if (epoch + 1) % 10 == 0:
+            for c in torch.unique(types_cat):
+                mask = types_cat == c
+                alpha_by_cat[str(c.item())] = alphas_cat[mask].mean().item()
 
         return {
             "train_loss": avg_loss,
             "train_forecast_loss": avg_forecast_loss,
             "alpha_mean": alpha_mean,
             "alpha_std": alpha_std,
+            "alpha_by_cat": alpha_by_cat,
         }
 
     @torch.no_grad()
@@ -186,17 +203,8 @@ class ReproducibleTrainer:
         self,
         val_loader: DataLoader,
         graph_data,
-    ) -> Dict[str, float]:
-        """
-        Validate model on validation set.
-
-        Args:
-            val_loader: Validation DataLoader.
-            graph_data: PyTorch Geometric Data object.
-
-        Returns:
-            Dictionary of validation metrics.
-        """
+    ) -> Dict[str, Any]:
+        """Validate model on validation set."""
         self.model.eval()
         total_loss = 0.0
         total_forecast_loss = 0.0
@@ -232,7 +240,7 @@ class ReproducibleTrainer:
             targets = torch.cat(all_targets, dim=0)
             metrics = compute_all_metrics(targets, preds)
         else:
-            metrics = {"MAE": 0.0, "RMSE": 0.0, "MAPE": 0.0, "SMAPE": 0.0, "R2": 0.0}
+            metrics = {"MAE": 0.0, "RMSE": 0.0, "WAPE": 0.0, "SMAPE": 0.0, "R2": 0.0}
 
         metrics["val_loss"] = avg_loss
         metrics["val_forecast_loss"] = avg_forecast_loss
@@ -244,17 +252,7 @@ class ReproducibleTrainer:
         val_loader: DataLoader,
         graph_data,
     ) -> Dict[str, Any]:
-        """
-        Full training loop with early stopping and checkpointing.
-
-        Args:
-            train_loader: Training DataLoader.
-            val_loader: Validation DataLoader.
-            graph_data: PyTorch Geometric Data object.
-
-        Returns:
-            Dictionary with final metrics and training history.
-        """
+        """Full training loop with early stopping and checkpointing."""
         print("=" * 60)
         print("TRAINING: Adaptive Temporal-Structural Fusion Model")
         print("=" * 60)
@@ -295,31 +293,29 @@ class ReproducibleTrainer:
                 f"Train: {train_metrics['train_loss']:.4f} | "
                 f"Val: {val_metrics['val_loss']:.4f} | "
                 f"RMSE: {val_metrics['RMSE']:.4f} | "
-                f"α={train_metrics['alpha_mean']:.3f}±{train_metrics['alpha_std']:.3f} | "
+                f"Alpha={train_metrics['alpha_mean']:.3f}+/-{train_metrics['alpha_std']:.3f} | "
                 f"LR: {current_lr:.2e} | "
                 f"{epoch_time:.1f}s"
             )
 
-            # Print alpha stats every 10 epochs
+            # Alpha stats every 10 epochs
             if (epoch + 1) % 10 == 0:
+                self.history["alpha_by_category"].append(train_metrics["alpha_by_cat"])
                 print(
                     f"    [Alpha Stats] Mean={train_metrics['alpha_mean']:.4f}, "
-                    f"Std={train_metrics['alpha_std']:.4f} "
-                    f"(higher α → more temporal, lower → more structural)"
+                    f"Std={train_metrics['alpha_std']:.4f}"
                 )
 
             # Early stopping check
             if val_metrics["val_loss"] < self.best_val_loss:
                 self.best_val_loss = val_metrics["val_loss"]
+                self.best_epoch = epoch + 1
                 self.epochs_without_improvement = 0
                 self._save_checkpoint(epoch, val_metrics)
             else:
                 self.epochs_without_improvement += 1
                 if self.epochs_without_improvement >= self.patience:
-                    print(
-                        f"\n  ⏹ Early stopping at epoch {epoch + 1} "
-                        f"(no improvement for {self.patience} epochs)"
-                    )
+                    print(f"\n  [STOP] Early stopping at epoch {epoch + 1}")
                     break
 
         total_time = time.time() - start_time
@@ -333,6 +329,7 @@ class ReproducibleTrainer:
 
         return {
             "best_val_loss": self.best_val_loss,
+            "best_epoch": self.best_epoch,
             "train_loss": self.history["train_loss"][-1],
             "val_loss": self.history["val_loss"][-1],
             "total_time": total_time,
@@ -346,24 +343,28 @@ class ReproducibleTrainer:
         batch["graph_edge_index"] = graph_data.edge_index.to(self.device)
         if graph_data.edge_attr is not None:
             batch["graph_edge_attr"] = graph_data.edge_attr.to(self.device)
+            
+        if hasattr(graph_data, "edge_type") and graph_data.edge_type is not None:
+            batch["graph_edge_type"] = graph_data.edge_type.to(self.device)
+        if hasattr(graph_data, "edge_weight_values") and graph_data.edge_weight_values is not None:
+            batch["graph_edge_weight"] = graph_data.edge_weight_values.to(self.device)
+            
         batch["material_type"] = batch["material_type"].to(self.device)
         batch["product_id"] = batch["product_id"].to(self.device)
-        # Move horizon to device (or create on device if missing)
+        
         if "horizon" in batch:
             batch["horizon"] = batch["horizon"].to(self.device)
         else:
-            batch["horizon"] = torch.zeros(
-                batch["material_type"].shape[0], dtype=torch.long, device=self.device
-            )
-        # Move remaining tensors to device
+            batch["horizon"] = torch.zeros(batch["material_type"].shape[0], dtype=torch.long, device=self.device)
+            
         for key in ["time_series", "price_history", "static_features", "targets"]:
             if key in batch and isinstance(batch[key], torch.Tensor):
                 batch[key] = batch[key].to(self.device)
         return batch
 
     def _save_checkpoint(self, epoch: int, metrics: Dict) -> None:
-        """Save model checkpoint with seed info."""
-        path = os.path.join(self.checkpoint_dir, "best_model.pt")
+        """Save model checkpoint."""
+        path = os.path.join(self.checkpoint_dir, f"best_model_seed{self.seed_manager.seed}.pt")
         torch.save(
             {
                 "epoch": epoch,
@@ -379,7 +380,7 @@ class ReproducibleTrainer:
 
     def _save_history(self) -> None:
         """Save training history as JSON."""
-        path = os.path.join(self.logs_dir, "training_history.json")
+        path = os.path.join(self.logs_dir, f"training_history_seed{self.seed_manager.seed}.json")
         with open(path, "w") as f:
             json.dump(self.history, f, indent=2)
         print(f"  Training history saved to {path}")
@@ -387,7 +388,7 @@ class ReproducibleTrainer:
     def load_checkpoint(self, path: Optional[str] = None) -> Dict:
         """Load model from checkpoint."""
         if path is None:
-            path = os.path.join(self.checkpoint_dir, "best_model.pt")
+            path = os.path.join(self.checkpoint_dir, f"best_model_seed{self.seed_manager.seed}.pt")
         checkpoint = torch.load(path, map_location=self.device)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         return checkpoint

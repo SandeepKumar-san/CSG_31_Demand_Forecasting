@@ -1,8 +1,11 @@
 """
 Main training script for the Adaptive Fusion model.
 
+Supports both SupplyGraph and USGS datasets via config-based switching.
+
 Usage:
     python experiments/train.py --config experiments/config.yaml
+    python experiments/train.py --config experiments/config.yaml --dataset usgs
 
 Seeds everything, loads data, trains model, saves results.
 Returns final metrics dictionary for reproducibility verification.
@@ -11,6 +14,7 @@ Returns final metrics dictionary for reproducibility verification.
 import argparse
 import os
 import sys
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -18,11 +22,29 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import torch
 from torch.utils.data import DataLoader
 
-from src.data.supplygraph_loader import SupplyGraphLoader
 from src.models.complete_model import AdaptiveFusionForecaster
 from src.training.trainer import ReproducibleTrainer
-from src.utils.config import load_config
+from src.utils.config import load_config, load_dataset_config, update_dynamic_parameters
 from src.utils.seed import SeedManager
+
+
+def get_data_loader(config: dict, dataset_name: str):
+    """
+    Factory function to get the appropriate data loader.
+
+    Args:
+        config: Full configuration dictionary.
+        dataset_name: "supplygraph" or "usgs".
+
+    Returns:
+        Loader instance with prepare_datasets() method.
+    """
+    if dataset_name == "usgs":
+        from src.data.usgs_loader import USGSLoader
+        return USGSLoader(config)
+    else:
+        from src.data.supplygraph_loader import SupplyGraphLoader
+        return SupplyGraphLoader(config)
 
 
 def collate_fn(batch):
@@ -38,18 +60,55 @@ def collate_fn(batch):
     return collated
 
 
-def main(config_path: str = "experiments/config.yaml") -> dict:
+
+
+def main(
+    config_path: str = "experiments/config.yaml",
+    dataset_override: str = None,
+    epochs_override: int = None,
+    seed_override: int = None,
+) -> dict:
     """
     Main training entry point.
 
     Args:
         config_path: Path to YAML configuration file.
+        dataset_override: Override dataset from CLI (None = use config).
+        epochs_override: Override epochs from CLI (None = use config).
 
     Returns:
         Dictionary with final metrics (for reproducibility verification).
     """
-    # ---- Load configuration ----
-    config = load_config(config_path)
+    # ---- Load bifurcated configuration ----
+    if dataset_override is None:
+        # Peak at raw config to find default dataset
+        raw_config = load_config(config_path)
+        dataset_name = raw_config.get("common", {}).get("dataset", "supplygraph")
+    else:
+        dataset_name = dataset_override
+
+    config = load_dataset_config(dataset_name, config_path)
+    
+    # ---- Dataset-Specific Output Organization ----
+    # Base results dir for this dataset (now all in 'output' section)
+    base_results = config["output"].get("results_dir", "results/")
+    ds_results = os.path.join(base_results, dataset_name)
+    
+    # Update all output paths to be dataset-nested
+    config["output"]["results_dir"] = ds_results
+    config["output"]["plots_dir"] = os.path.join(ds_results, "plots")
+    config["output"]["checkpoints_dir"] = os.path.join(ds_results, "checkpoints")
+    config["output"]["logs_dir"] = os.path.join(ds_results, "logs")
+    config["output"]["risk_reports_dir"] = os.path.join(ds_results, "risk_reports")
+
+    # ---- Apply CLI Overrides ----
+    if epochs_override is not None:
+        config["training"]["epochs"] = epochs_override
+        print(f"  [CLI] Epochs override: {epochs_override}")
+
+    if seed_override is not None:
+        config["reproducibility"]["seed"] = seed_override
+        print(f"  [CLI] Seed override: {seed_override}")
 
     # ---- STEP 1: Set all seeds FIRST ----
     seed = config["reproducibility"]["seed"]
@@ -60,6 +119,7 @@ def main(config_path: str = "experiments/config.yaml") -> dict:
     print("  ADAPTIVE TEMPORAL-STRUCTURAL FUSION MODEL")
     print("  Training Pipeline")
     print("=" * 60)
+    print(f"  Dataset: {dataset_name}")
     print(f"  Master seed: {seed}")
     print(f"  Deterministic: {config['reproducibility']['deterministic']}")
     print("=" * 60)
@@ -68,22 +128,24 @@ def main(config_path: str = "experiments/config.yaml") -> dict:
     device = seed_manager.get_device()
 
     # ---- STEP 3: Load data ----
-    print("\n📦 Loading data...")
-    loader = SupplyGraphLoader(config)
+    print("\n[LOAD] Loading data...")
+    loader = get_data_loader(config, dataset_name)
     train_ds, val_ds, test_ds, info = loader.prepare_datasets()
     graph_data = info["graph_data"]
 
-    # ---- Dynamic config override from actual data ----
-    # Update num_material_types from real dataset (may differ from config default)
-    actual_mat_types = info["metadata"]["n_material_types"]
-    config["model"]["fusion"]["num_material_types"] = max(actual_mat_types, 2)
-    print(f"  num_material_types set to {config['model']['fusion']['num_material_types']} (from data)")
+    # ---- Step 4: Dynamic Dimension Detection ----
+    # This ONLY updates parameters that are determined by the data shape.
+    # It NEVER overrides architectural hyperparameters (hidden_dim, dropout).
+    update_dynamic_parameters(config, info, graph_data)
 
-    # Update num_unknown_features from actual feature count
-    config["model"]["tft"]["num_unknown_features"] = info["n_features"]
-    print(f"  num_unknown_features set to {info['n_features']} (from data)")
+    # ---- Attach edge_type/edge_weight to graph_data for USGS ----
+    # These are used by the multi-relational GAT
+    if hasattr(graph_data, "edge_type"):
+        print(f"  [Graph] edge_type tensor: {graph_data.edge_type.shape}")
+    if hasattr(graph_data, "edge_weight_values"):
+        print(f"  [Graph] edge_weight tensor: {graph_data.edge_weight_values.shape}")
 
-    # ---- STEP 4: Create DataLoaders (with seeded generators) ----
+    # ---- STEP 5: Create DataLoaders ----
     num_workers = config["reproducibility"].get("num_workers", 0)
     batch_size = config["training"]["batch_size"]
 
@@ -107,27 +169,28 @@ def main(config_path: str = "experiments/config.yaml") -> dict:
         drop_last=False,
     )
 
-    print(f"  Train batches: {len(train_loader)}")
+    print(f"\n  Train batches: {len(train_loader)}")
     print(f"  Val batches: {len(val_loader)}")
 
-    # ---- STEP 5: Initialize model ----
-    print("\n🏗️ Initializing model...")
+    # ---- STEP 6: Initialize model ----
+    print("\n[STEP] Initializing model...")
     model = AdaptiveFusionForecaster(config, seed=seed)
     n_params = sum(p.numel() for p in model.parameters())
     n_trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"  Parameters: {n_params:,} total, {n_trainable:,} trainable")
 
-    # ---- STEP 6: Train ----
-    print("\n🔬 Starting reproducible training...")
+    # ---- STEP 7: Train ----
+    print("\n[STEP] Starting reproducible training...")
     trainer = ReproducibleTrainer(model, config, seed_manager, device)
     final_metrics = trainer.train(train_loader, val_loader, graph_data)
 
-    # ---- STEP 7: Save final results ----
-    results_dir = config.get("output", {}).get("results_dir", "results/")
+    # ---- STEP 8: Save results ----
+    results_dir = config["output"]["results_dir"]
     os.makedirs(results_dir, exist_ok=True)
 
     import json
     results = {
+        "dataset": dataset_name,
         "seed": seed,
         "best_val_loss": final_metrics["best_val_loss"],
         "train_loss": final_metrics["train_loss"],
@@ -141,7 +204,7 @@ def main(config_path: str = "experiments/config.yaml") -> dict:
     with open(results_path, "w") as f:
         json.dump(results, f, indent=2)
 
-    print(f"\n✅ Results saved to {results_path}")
+    print(f"\n[DONE] Results saved to {results_path}")
     print(f"   Best val loss: {results['best_val_loss']:.6f}")
 
     return results
@@ -157,5 +220,29 @@ if __name__ == "__main__":
         default="experiments/config.yaml",
         help="Path to configuration YAML file",
     )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        choices=["supplygraph", "usgs"],
+        default=None,
+        help="Override dataset (default: use config file setting)",
+    )
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=None,
+        help="Override number of training epochs",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for reproducibility",
+    )
     args = parser.parse_args()
-    main(config_path=args.config)
+    main(
+        config_path=args.config,
+        dataset_override=args.dataset,
+        epochs_override=args.epochs,
+        seed_override=args.seed,
+    )

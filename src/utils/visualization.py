@@ -82,12 +82,16 @@ class ModelVisualizer:
             ax2.grid(True, alpha=0.3)
         else:
             ax2.set_visible(False)
+            
+        if "best_epoch" in history:
+            ax1.axvline(x=history["best_epoch"], color='black', linestyle='--', alpha=0.5, label='Best Epoch')
+            ax1.legend()
 
         plt.tight_layout()
         path = os.path.join(self.output_dir, "training_curves.png")
         fig.savefig(path)
         plt.close(fig)
-        print(f"  📊 Saved: {path}")
+        print(f"  [INFO] Saved: {path}")
         return path
 
     # ------------------------------------------------------------------
@@ -171,7 +175,7 @@ class ModelVisualizer:
         path = os.path.join(self.output_dir, "predictions_vs_actual.png")
         fig.savefig(path)
         plt.close(fig)
-        print(f"  📊 Saved: {path}")
+        print(f"  [INFO] Saved: {path}")
         return path
 
     # ------------------------------------------------------------------
@@ -230,7 +234,7 @@ class ModelVisualizer:
         path = os.path.join(self.output_dir, "alpha_distribution_by_material.png")
         fig.savefig(path)
         plt.close(fig)
-        print(f"  📊 Saved: {path}")
+        print(f"  [INFO] Saved: {path}")
         return path
 
     # ------------------------------------------------------------------
@@ -267,10 +271,10 @@ class ModelVisualizer:
         ax.set_ylim(0, 1)
 
         plt.tight_layout()
-        path = os.path.join(self.output_dir, "alpha_by_horizon.png")
+        path = os.path.join(self.output_dir, "alpha_by_epoch.png")
         fig.savefig(path)
         plt.close(fig)
-        print(f"  📊 Saved: {path}")
+        print(f"  [INFO] Saved: {path}")
         return path
 
     # ------------------------------------------------------------------
@@ -362,57 +366,65 @@ class ModelVisualizer:
         path = os.path.join(self.output_dir, "risk_dashboard.png")
         fig.savefig(path)
         plt.close(fig)
-        print(f"  📊 Saved: {path}")
+        print(f"  [INFO] Saved: {path}")
         return path
 
     # ------------------------------------------------------------------
     # Plot 5: Model Comparison
     # ------------------------------------------------------------------
-    def plot_model_comparison(self, results: Dict[str, Dict[str, float]]) -> str:
+    def plot_model_comparison(self, results: Dict[str, Any]) -> str:
         """
-        Bar chart comparing RMSE across all model baselines.
+        Bar chart comparing metrics across all model baselines.
+        Supports both single values (deterministic) and (mean, std) tuples/dicts.
 
         Args:
-            results: Dict mapping model name → metrics dict.
-
-        Returns:
-            Path to saved figure.
+            results: Dict mapping model name -> metrics dict. 
+                     Stochastic metrics can be dicts: {"RMSE": 0.5, "RMSE_std": 0.1}
         """
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
         models = list(results.keys())
-        rmse_vals = [results[m].get("RMSE", 0) for m in models]
-        mae_vals = [results[m].get("MAE", 0) for m in models]
-        r2_vals = [results[m].get("R2", 0) for m in models]
+        
+        def get_val_and_std(model_name, metric_key):
+            m_data = results[model_name]
+            val = m_data.get(metric_key, 0)
+            # Check for std in various formats
+            std = m_data.get(f"{metric_key}_std", 0)
+            return val, std
+
+        rmse_data = [get_val_and_std(m, "RMSE") for m in models]
+        wape_data = [get_val_and_std(m, "WAPE") for m in models]
+        r2_data = [get_val_and_std(m, "R2") for m in models]
+
+        rmse_vals, rmse_stds = zip(*rmse_data)
+        wape_vals, wape_stds = zip(*wape_data)
+        r2_vals, r2_stds = zip(*r2_data)
 
         x = np.arange(len(models))
         bar_width = 0.35
 
-        # RMSE & MAE
-        colors = ["#90CAF9", "#90CAF9", "#90CAF9", "#2196F3"]  # Highlight adaptive
-        bars1 = ax1.bar(x - bar_width / 2, rmse_vals, bar_width, label="RMSE", color=colors)
-        bars2 = ax1.bar(x + bar_width / 2, mae_vals, bar_width, label="MAE",
-                        color=["#FFCC80", "#FFCC80", "#FFCC80", "#FF9800"])
+        # 1. RMSE & WAPE
+        colors_rmse = ["#90CAF9" if "Ours" not in m else "#2196F3" for m in models]
+        colors_wape = ["#FFCC80" if "Ours" not in m else "#FF9800" for m in models]
+        
+        bars1 = ax1.bar(x - bar_width / 2, rmse_vals, bar_width, yerr=rmse_stds, 
+                        label="RMSE", color=colors_rmse, capsize=4, error_kw={'alpha':0.6})
+        bars2 = ax1.bar(x + bar_width / 2, wape_vals, bar_width, yerr=wape_stds,
+                        label="WAPE", color=colors_wape, capsize=4, error_kw={'alpha':0.6})
 
         ax1.set_xlabel("Model")
         ax1.set_ylabel("Error")
-        ax1.set_title("Model Comparison: RMSE & MAE")
+        ax1.set_title("Model Comparison: RMSE & WAPE (Mean ± Std)")
         ax1.set_xticks(x)
         ax1.set_xticklabels([m.split("(")[0].strip() for m in models],
                             rotation=15, ha="right")
         ax1.legend()
         ax1.grid(True, alpha=0.3, axis="y")
 
-        # Add value labels
-        for bar in bars1:
-            ax1.text(
-                bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01,
-                f"{bar.get_height():.3f}", ha="center", va="bottom", fontsize=9
-            )
-
-        # R²
-        r2_colors = ["#A5D6A7", "#A5D6A7", "#A5D6A7", "#4CAF50"]
-        bars3 = ax2.bar(x, r2_vals, bar_width * 1.5, color=r2_colors)
+        # 2. R²
+        r2_colors = ["#A5D6A7" if "Ours" not in m else "#4CAF50" for m in models]
+        bars3 = ax2.bar(x, r2_vals, bar_width * 1.5, yerr=r2_stds, 
+                        color=r2_colors, capsize=4, error_kw={'alpha':0.6})
         ax2.set_xlabel("Model")
         ax2.set_ylabel("R²")
         ax2.set_title("Model Comparison: R² Score")
@@ -421,15 +433,14 @@ class ModelVisualizer:
                             rotation=15, ha="right")
         ax2.grid(True, alpha=0.3, axis="y")
 
-        for bar in bars3:
-            ax2.text(
-                bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.005,
-                f"{bar.get_height():.3f}", ha="center", va="bottom", fontsize=9
-            )
+        # Add value labels
+        for i, bar in enumerate(bars1):
+            ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + rmse_stds[i] + 0.01,
+                    f"{bar.get_height():.2f}", ha="center", va="bottom", fontsize=8)
 
         plt.tight_layout()
         path = os.path.join(self.output_dir, "model_comparison.png")
         fig.savefig(path)
         plt.close(fig)
-        print(f"  📊 Saved: {path}")
+        print(f"  [INFO] Saved: {path}")
         return path

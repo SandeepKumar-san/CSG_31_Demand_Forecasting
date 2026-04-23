@@ -1,14 +1,28 @@
 # Core dependencies with EXACT versions for reproducibility
 torch==2.1.0
+
+# -------------------------------------------------------------
+# PyTorch Geometric (PyG) and its C++ extensions
+# -------------------------------------------------------------
 torch-geometric==2.4.0
-torch-scatter==2.1.2
-torch-sparse==0.6.18
+# IMPORTANT: Do NOT uncomment torch-scatter or torch-sparse.
+# pip will try to build them from source and crash with "ModuleNotFoundError: No module named 'torch'".
+# Instead, install them manually via pre-compiled Linux wheels AFTER installing torch:
+# pip install torch-scatter==2.1.2 torch-sparse==0.6.18 -f https://data.pyg.org/whl/torch-2.1.0+cu118.html
+# torch-scatter==2.1.2
+# torch-sparse==0.6.18
+
+# Data processing and utilities
 numpy==1.24.3
 pandas==2.0.3
 scikit-learn==1.3.0
 pyyaml==6.0.1
 matplotlib==3.7.2
 seaborn==0.12.2
+
+# Classical ML & Statistical Baselines
+xgboost>=1.7.0
+statsmodels>=0.14.0
 
 # Optional but recommended
 tqdm==4.66.1

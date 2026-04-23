@@ -59,22 +59,24 @@ class AdaptiveFusionLoss(nn.Module):
 
     where:
       - forecast_loss: QuantileLoss on predictions vs targets
-      - alpha_regularization: Negative std of alpha (encourages diversity)
+      - alpha_regularization: Information Theory Entropy of alpha (maximizes diversity)
 
     Args:
         quantiles: Quantile levels for QuantileLoss.
-        alpha_reg_weight: Weight for alpha regularization term (default: 0.01).
+        alpha_reg_weight: Weight for alpha regularization term (default: 0.05).
     """
 
     def __init__(
         self,
         quantiles: list = None,
-        alpha_reg_weight: float = 0.01,
+        alpha_reg_weight: float = 0.05,
+        quantile_loss_weight: float = 0.3,
     ) -> None:
         super().__init__()
         self.quantile_loss = QuantileLoss(quantiles)
         self.mse_loss = nn.MSELoss()
         self.alpha_reg_weight = alpha_reg_weight
+        self.quantile_loss_weight = quantile_loss_weight
 
     def forward(
         self,
@@ -97,16 +99,20 @@ class AdaptiveFusionLoss(nn.Module):
         # ---- Forecast loss (MSE on point forecast) ----
         forecast_loss = self.mse_loss(predictions["forecast"], targets)
 
-        # ---- Quantile loss (if quantile predictions available) ----
+        # ---- Quantile loss (context-aware priority) ----
         if "quantile_predictions" in predictions and predictions["quantile_predictions"] is not None:
             q_loss = self.quantile_loss(predictions["quantile_predictions"], targets)
-            forecast_loss = forecast_loss + q_loss
+            forecast_loss = forecast_loss + self.quantile_loss_weight * q_loss
 
-        # ---- Alpha regularization: encourage diversity in alpha ----
+        # ---- Alpha regularization: prevent saturation (Issue 3 refinement) ----
         alpha = predictions.get("alpha")
-        if alpha is not None and alpha.numel() > 1:
-            # Negative std: high std = low penalty (encourages diversity)
-            alpha_reg = -torch.std(alpha) * self.alpha_reg_weight
+        if alpha is not None:
+            # Double-hinge penalty to keep alpha in the informative [0.05, 0.95] range
+            # Prevents model from "giving up" on either the temporal or structural branch
+            alpha_reg = self.alpha_reg_weight * (
+                torch.mean(torch.relu(alpha - 0.95)) +   # prevent collapse to 1.0
+                torch.mean(torch.relu(0.05 - alpha))    # prevent collapse to 0.0
+            )
         else:
             alpha_reg = torch.tensor(0.0, device=targets.device)
 

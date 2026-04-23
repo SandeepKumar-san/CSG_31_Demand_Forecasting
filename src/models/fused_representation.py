@@ -31,9 +31,9 @@ class FusedDemandRepresentation(nn.Module):
 
     def __init__(self, config: dict) -> None:
         super().__init__()
-        self.hidden_dim = config.get("model", {}).get("hidden_dim", 64)
-        data_cfg = config.get("data", {})
-        self.num_horizons = len(data_cfg.get("forecast_horizons", [1, 3, 6, 12]))
+        self.hidden_dim = config["model"]["hidden_dim"]
+        # Get num_horizons from dataset-specific config (via fusion override)
+        self.num_horizons = config["model"]["fusion"]["num_horizons"]
 
         # ---- Forecast head ----
         self.forecast_head = nn.Sequential(
@@ -52,7 +52,9 @@ class FusedDemandRepresentation(nn.Module):
 
         # ---- Residual connection from fused embedding ----
         self.residual_proj = nn.Linear(self.hidden_dim, self.num_horizons)
-        self.layer_norm = nn.LayerNorm(self.num_horizons)
+        # LayerNorm over size-1 vectors always outputs 0 (mean=value, std=0).
+        # Use Identity when num_horizons == 1 to avoid this silent bug.
+        self.layer_norm = nn.LayerNorm(self.num_horizons) if self.num_horizons > 1 else nn.Identity()
 
     def forward(
         self,

@@ -1,0 +1,128 @@
+node_id,commodity_name,category,category_name
+0,Abrasives (Manufactured),8,Other
+1,Alumina,8,Other
+2,Aluminum,1,Construction
+3,Antimony,8,Other
+4,Argon,8,Other
+5,Arsenic,8,Other
+6,Asbestos,8,Other
+7,Barite,6,Industrial
+8,Bauxite,8,Other
+9,Beryllium,8,Other
+10,Bismuth,8,Other
+11,Boron,6,Industrial
+12,Bromine,6,Industrial
+13,Cadmium,8,Other
+14,Cement,1,Construction
+15,Cerium,4,Rare Earths
+16,Cesium,8,Other
+17,Chromium,5,Alloys
+18,Clays,1,Construction
+19,Cobalt,0,Battery Materials
+20,Copper,2,Electronics
+21,"Diamond (Bort, grit, and dust and powder; natural and synthetic)",8,Other
+22,Diamond (Industrial),8,Other
+23,"Diamond (Stones, natural and synthetic)",1,Construction
+24,Diatomite,6,Industrial
+25,Dysprosium,4,Rare Earths
+26,Erbium,4,Rare Earths
+27,Europium,4,Rare Earths
+28,Feldspar,6,Industrial
+29,Feldspar And Nepheline Syenite,6,Industrial
+30,Fluorspar,6,Industrial
+31,Gadolinium,4,Rare Earths
+32,Gallium,2,Electronics
+33,Garnet (Industrial),8,Other
+34,Gemstones,1,Construction
+35,Germanium,2,Electronics
+36,Gold,2,Electronics
+37,Granite Only,8,Other
+38,Graphite (Natural),0,Battery Materials
+39,Ground high-purity quartz,8,Other
+40,Gypsum,1,Construction
+41,Hafnium,5,Alloys
+42,Helium,3,Energy
+43,Holmium,4,Rare Earths
+44,Indium,2,Electronics
+45,Industrial cultured quartz crystal,8,Other
+46,Iodine,6,Industrial
+47,Iridium,7,Precious Metals
+48,Iron And Steel,1,Construction
+49,Iron And Steel Scrap,1,Construction
+50,Iron And Steel Slag,1,Construction
+51,Iron Ore,1,Construction
+52,Iron Oxide Pigments,1,Construction
+53,Krypton,8,Other
+54,Kyanite And Related Minerals,8,Other
+55,Lanthanum,4,Rare Earths
+56,Lead,8,Other
+57,Lime,6,Industrial
+58,Lithium,0,Battery Materials
+59,Lutetium,4,Rare Earths
+60,Magnesium Compounds,6,Industrial
+61,Magnesium Metal,6,Industrial
+62,Manganese,0,Battery Materials
+63,Mercury,8,Other
+64,Mica (Natural),6,Industrial
+65,Molybdenum,5,Alloys
+66,Neodymium,4,Rare Earths
+67,Neon,8,Other
+68,"Neon, krypton, and xenon ",8,Other
+69,Nepheline Syenite,8,Other
+70,Nickel,0,Battery Materials
+71,Niobium (Columbium),5,Alloys
+72,Nitrogen (Fixed)Ammonia,6,Industrial
+73,Osmium,7,Precious Metals
+74,Palladium,7,Precious Metals
+75,Peat,3,Energy
+76,Perlite,6,Industrial
+77,Phosphate Rock,6,Industrial
+78,Platinum,7,Precious Metals
+79,Platinum-Group Metals,7,Precious Metals
+80,Potash,6,Industrial
+81,Praseodymium,4,Rare Earths
+82,Pumice And Pumicite,6,Industrial
+83,Quartz (High-Purity And Industrial Cultured Crystal),8,Other
+84,Rare Earths,4,Rare Earths
+85,Rare Earths (Heavy),4,Rare Earths
+86,Rhenium,5,Alloys
+87,Rhodium,7,Precious Metals
+88,Rubidium,8,Other
+89,Ruthenium,7,Precious Metals
+90,Salt,6,Industrial
+91,Samarium,4,Rare Earths
+92,Sand And Gravel (Construction),1,Construction
+93,Sand And Gravel (Industrial),1,Construction
+94,Scandium,4,Rare Earths
+95,Selenium,2,Electronics
+96,Silicon,2,Electronics
+97,Silver,2,Electronics
+98,Soda Ash,6,Industrial
+99,Stone (Crushed),1,Construction
+100,Stone (Dimension),1,Construction
+101,Strontium,6,Industrial
+102,Sulfur,6,Industrial
+103,Talc And Pyrophyllite,6,Industrial
+104,Tantalum,5,Alloys
+105,Tellurium,2,Electronics
+106,Terbium,4,Rare Earths
+107,Thallium,8,Other
+108,Thorium,8,Other
+109,TiO2 Pigment,8,Other
+110,TiO2 pigment,8,Other
+111,Tin,7,Precious Metals
+112,Tio2 Pigment,8,Other
+113,Titanium Mineral Concentrates,6,Industrial
+114,Titanium Sponge Metal,6,Industrial
+115,Titanium sponge metal,6,Industrial
+116,Tungsten,5,Alloys
+117,Vanadium,5,Alloys
+118,Vermiculite,6,Industrial
+119,Wollastonite,6,Industrial
+120,Xenon,8,Other
+121,Ytterbium,4,Rare Earths
+122,Yttrium,4,Rare Earths
+123,Zeolites (Natural),6,Industrial
+124,Zinc,8,Other
+125,Zirconium,6,Industrial
+126,Zirconium And Hafnium,5,Alloys

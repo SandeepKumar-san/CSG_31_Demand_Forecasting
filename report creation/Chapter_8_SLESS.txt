@@ -1,0 +1,242 @@
+ADAPTIVE TEMPORAL-STRUCTURAL FUSION MODEL FOR MINERAL COMMODITY DEMAND FORECASTING
+________________________________________________________________________________
+
+                              Chapter 8
+           Social, Legal, Ethical, Sustainability and Safety Aspects
+
+In this chapter, the ATSF model for mineral commodity demand forecasting is
+examined from the perspectives of data ethics, societal responsibility, legal
+compliance, and long-term sustainability. The analysis covers data privacy
+standards, sources of algorithmic bias inherent to the evaluated datasets,
+the potential for misuse given the model's procurement risk outputs, alignment
+with international regulatory frameworks for mineral resources and AI systems,
+and the project's contribution to global sustainability through its alignment
+with United Nations Sustainable Development Goals. These considerations are
+integral to the responsible engineering of any AI system deployed in critical
+supply-chain decision contexts.
+
+________________________________________________________________________________
+8.1 PRIVACY CONSIDERATIONS
+________________________________________________________________________________
+
+The ATSF model was developed with strict adherence to data privacy and ethical
+research standards throughout all phases of the project. No private procurement
+data, sensitive enterprise records, commercially restricted trade information,
+or personally identifiable information (PII) were used at any stage of training,
+validation, or evaluation. Both datasets utilised — the SupplyGraph benchmark [19]
+and the USGS Mineral Commodity Summaries 2024 [20] — are publicly available
+for academic research purposes and are published by recognised institutional
+sources: the AAAI Graphs and Complex Structures workshop and the United States
+Geological Survey respectively.
+
+8.1.1 PROOF-OF-CONCEPT DISCLOSURE FOR RISK SCORING:
+
+Layer 5, the rule-based risk scoring interface implemented in
+risk_decision_layer.py, produces procurement risk assessments based on point
+forecasts, GAT attention weights, and configurable thresholds sourced from
+experiments/config.yaml. It is explicitly and prominently disclosed that the
+lead-time proxy values used by this layer are synthetic: SupplyGraph uses
+group-level constants sampled from the range [3, 30] days; USGS uses a fixed
+value of 1.0. These proxies do not represent real logistics data from any
+supply-chain operator. The risk assessment outputs — budget_risk,
+leadtime_risk, dependency_risk, overall_risk_score, and action flags — are
+representative demonstrations of the decision-support architecture and must not
+be deployed in real-world operational procurement scenarios without validation
+against actual transport logs and domain-expert review. This layer is formally
+classified as a proof-of-concept and is documented as Limitation 4 of the
+model [Section 3.5].
+
+8.1.2 DATA USE SCOPE:
+
+The node features constructed by graph_builder.py — recent demand average,
+price-level proxy, production capacity utilisation, and normalised lead time —
+are all derived from aggregated commodity-level statistics sourced from the
+public datasets. No individual enterprise production records, no company-level
+financial data, and no trade partner identities are represented in the node
+feature matrices. Edge confidence weights in all_edges.csv are derived from
+published materials science and supply-chain literature, not from proprietary
+industrial relationship databases.
+
+________________________________________________________________________________
+8.2 ALGORITHMIC BIAS AND FAIRNESS
+________________________________________________________________________________
+
+Two distinct sources of algorithmic bias have been identified and documented
+within the evaluated datasets, consistent with the transparency requirements
+of responsible AI development.
+
+8.2.1 GEOGRAPHIC BIAS IN SUPPLYGRAPH:
+
+The SupplyGraph test partition is predominantly populated by products belonging
+to the European Economic Area (EEA) product group. This geographic
+concentration arises from the chronological 70/15/15 split applied to the
+222-day trading window: since the test set comprises the final 15% of the
+time series, and the EEA product group has the highest representation in the
+latter portion of the dataset, test-set evaluation is necessarily biased
+toward late-period EEA demand behaviour [Limitation 3]. Users applying the
+trained SupplyGraph model to product groups with different seasonal patterns or
+market structures should interpret the reported WAPE of 55.07%+-1.94% with
+appropriate caution, as generalisation to non-EEA product groups has not been
+empirically validated.
+
+8.2.2 LOW-DATA REGIME BIAS IN USGS:
+
+The USGS dataset operates in a severe low-data regime: each of the 127 mineral
+commodity nodes has at most five annual observations, of which only 3-4 are
+used for training under the rolling-window cross-validation scheme [Limitation 1].
+While multi-seed replication across five independent seeds mitigates the risk
+of seed-specific overfitting — confirmed by the convergence report in Section
+6.8 — binary conclusions regarding individual mineral commodity demand
+trajectories should be interpreted with caution. The small sample size (n=5
+seeds) also limits the achievable Wilcoxon signed-rank p-value to a minimum
+of p=0.0625 as a mathematical floor [Limitation 2], precluding conventional
+statistical significance thresholds.
+
+8.2.3 GENERALISATION LIMITATIONS:
+
+The model's forecasting performance has been validated on the two specific
+datasets described in Section 5.4. Its fairness and accuracy in other industrial
+domains — including metals not represented in the USGS commodity list,
+supply chains at sub-annual temporal resolution, or geographies not covered
+by USGS reporting — remain to be empirically tested [Limitation 7]. Any
+deployment of the ATSF model beyond the two evaluated datasets must be
+accompanied by appropriate domain-specific validation.
+
+________________________________________________________________________________
+8.3 POTENTIAL FOR MISUSE
+________________________________________________________________________________
+
+8.3.1 MISINTERPRETATION OF THE RISK SCORING LAYER:
+
+The most significant misuse risk associated with the ATSF system is the
+deployment of the Layer 5 risk scoring outputs in live operational procurement
+decisions without understanding their proof-of-concept status. The risk
+assessment thresholds — budget_threshold=100,000, lead_time_safety_factor=1.5,
+criticality_threshold=0.7 — are configurable defaults set in experiments/
+config.yaml, and the thresholds governing action flag generation were designed
+for demonstration purposes, not calibrated against historical procurement
+outcomes. Using these outputs to trigger real supplier expediting, backup
+supplier activation, or financial budget reallocation without domain-expert
+validation would constitute a misuse of the system.
+
+8.3.2 MISINTERPRETATION OF GEOPOLITICAL EDGE LABELS:
+
+The USGS supply-chain graph contains a geopolitical_supply_risk edge type
+(ID 8), which connects mineral commodity pairs that share documented
+geopolitical supply concentration risk as reported in the USGS Mineral
+Commodity Summaries 2024 [20]. It must be clearly understood that the ATSF
+model is a demand-forecasting system, not a geopolitical prediction or risk
+rating system. The geopolitical_supply_risk edge label encodes an existing
+documented structural relationship between commodities — it reflects structural
+relatedness in supply concentration, not a capability to forecast geopolitical
+events. Users must not interpret the edge ablation result for
+geopolitical_supply_risk (Delta RMSE = -0.55% when removed, classifying it as
+causally important) as a endorsement of any geopolitical risk rating or
+country-specific supply chain assessment.
+
+8.3.3 ADVERSARIAL QUERY RISKS IN THE AGENTIC PLATFORM:
+
+The Streamlit-based procurement agent (Tab 3) routes user natural-language
+queries to the meta/llama-3.1-70b-instruct model via the NVIDIA NIM API.
+Although the system prompt explicitly instructs the model to ground its outputs
+in the verified ATSF structural trace — and the native subgraph extraction step
+prevents hallucinated commodity names from entering the pipeline — adversarial
+or ambiguous user inputs that bypass the entity extraction step could produce
+procurement advice detached from the empirical model outputs. Deployment in
+high-stakes procurement environments requires additional input sanitisation and
+human review of all LLM-generated procurement narratives before operational use.
+
+________________________________________________________________________________
+8.4 REGULATORY COMPLIANCE AND LEGAL FRAMEWORKS
+________________________________________________________________________________
+
+8.4.1 DATA SOURCE COMPLIANCE:
+
+All USGS data is sourced from the official Mineral Commodity Summaries 2024
+publication of the United States Geological Survey [20], a publicly available
+government publication issued under open-access terms for research and
+educational use. The SupplyGraph data is sourced from the AAAI 2024 Graphs and
+More Complex Structures workshop benchmark dataset [19], which is published
+under academic research licence terms. No proprietary, classified, restricted-
+access, or regulated industrial data was used at any stage of the project.
+The project therefore operates in full compliance with open-research regulations
+and Presidency University ethics policies governing academic data use.
+
+8.4.2 ALIGNMENT WITH INTERNATIONAL MINERAL REPORTING STANDARDS:
+
+The project's framing of mineral commodity demand — particularly its focus on
+critical minerals such as lithium, cobalt, and copper — is aligned with the
+International Energy Agency's Global Critical Minerals Outlook 2024 [17], which
+provides the authoritative global framework for understanding the strategic
+importance of critical mineral supply security in the context of the clean energy
+transition. The USGS dataset, which serves as the primary source of annual
+production, import, and export statistics for 127 mineral commodities, is the
+official reference publication used by the IEA in its own supply security
+assessments, ensuring that the project's data sources are consistent with
+international mineral reporting standards.
+
+8.4.3 AI SYSTEM TRANSPARENCY REQUIREMENTS:
+
+In alignment with emerging AI transparency frameworks, this project provides
+the following disclosures: (1) the complete model architecture, training
+configuration, and all verified performance metrics are documented in this
+report; (2) all seven known limitations of the model are explicitly stated
+in Section 9.2; (3) the risk scoring layer is clearly labelled as a
+proof-of-concept and not operationally validated; (4) the statistical
+limitations of the five-seed evaluation — including the minimum achievable
+Wilcoxon p-value of 0.0625 — are transparently reported rather than obscured;
+and (5) the synthetic nature of the lead-time proxy values used in Layer 5
+is documented at every point of presentation.
+
+________________________________________________________________________________
+8.5 SUSTAINABILITY AND SDG IMPACT
+________________________________________________________________________________
+
+As introduced in Section 1.6, the ATSF model directly supports three of the
+United Nations Sustainable Development Goals, contributing to the broader
+international sustainability agenda in the context of critical mineral supply
+chains and the global clean energy transition [17].
+
+8.5.1 SDG 9: INDUSTRY, INNOVATION AND INFRASTRUCTURE:
+
+SDG 9 calls for the building of resilient infrastructure, the promotion of
+inclusive and sustainable industrialisation, and the fostering of innovation.
+The ATSF model supports SDG 9 by advancing the state of the art in multi-modal
+AI for critical supply chain management. By replacing fixed, inflexible fusion
+assumptions with a learned adaptive mechanism, the project demonstrates how
+AI innovation can produce more reliable industrial intelligence for procurement
+planners. The interactive Streamlit agentic platform further advances this goal
+by making complex graph neural network outputs accessible to non-technical
+procurement stakeholders through natural-language query interfaces, reducing
+the barrier to technology adoption in industrial supply chain contexts.
+
+8.5.2 SDG 12: RESPONSIBLE CONSUMPTION AND PRODUCTION:
+
+SDG 12 calls for ensuring sustainable consumption and production patterns.
+Accurate demand forecasting is a prerequisite for responsible production, as
+it reduces the material waste associated with over-procurement, excess inventory,
+and systemic forecasting errors in mineral supply chains. By achieving a USGS
+WAPE of 7.01%+-0.83% — below the XGBoost baseline of 8.07% — the ATSF model
+demonstrates a quantifiably more precise forecast signal for annual mineral
+demand, which translates directly to more accurate sourcing and stockpile
+planning decisions and a corresponding reduction in procurement inefficiency
+and wasted resource acquisition.
+
+8.5.3 SDG 13: CLIMATE ACTION:
+
+SDG 13 calls for urgent action to combat climate change and its impacts. The
+global transition to clean energy technologies — electric vehicles, renewable
+energy storage, and grid infrastructure — depends critically on the secure and
+predictable supply of a set of key mineral commodities including lithium,
+cobalt, nickel, and copper [17]. Accurate demand forecasting for these
+commodities supports long-term capital planning for mining and refining
+investment, reduces supply disruptions that delay clean energy deployments, and
+enables procurement strategies that account for geopolitical supply risks.
+The IEA's Global Critical Minerals Outlook 2024 [17] explicitly identifies
+improved forecasting methodology as a key gap in supporting the energy
+transition, providing direct institutional context for the societal relevance
+of this project.
+
+________________________________________________________________________________
+Presidency School of Computer Science and Engineering, Presidency University
+________________________________________________________________________________

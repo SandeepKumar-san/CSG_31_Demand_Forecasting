@@ -21,22 +21,19 @@ def rmse(y_true: torch.Tensor, y_pred: torch.Tensor) -> float:
     return torch.sqrt(torch.mean((y_true - y_pred) ** 2)).item()
 
 
-def mape(y_true: torch.Tensor, y_pred: torch.Tensor, epsilon: float = 1e-8) -> float:
-    """
-    Mean Absolute Percentage Error.
 
-    Args:
-        y_true: Ground truth values.
-        y_pred: Predicted values.
-        epsilon: Small constant to avoid division by zero.
+
+def wape(y_true: torch.Tensor, y_pred: torch.Tensor, epsilon: float = 1e-8) -> float:
+    """
+    Weighted Absolute Percentage Error.
+    Highly robust to zero/near-zero demand targets because the denominator is summed over the batch.
 
     Returns:
-        MAPE as a percentage (0-100 scale).
+        WAPE as a percentage (0-100 scale).
     """
     return (
-        torch.mean(torch.abs((y_true - y_pred) / (torch.abs(y_true) + epsilon)))
-        .item() * 100.0
-    )
+        torch.sum(torch.abs(y_true - y_pred)) / (torch.sum(torch.abs(y_true)) + epsilon)
+    ).item() * 100.0
 
 
 def smape(y_true: torch.Tensor, y_pred: torch.Tensor, epsilon: float = 1e-8) -> float:
@@ -74,12 +71,12 @@ def compute_all_metrics(
         y_pred: Prediction tensor.
 
     Returns:
-        Dictionary with keys: MAE, RMSE, MAPE, SMAPE, R2.
+        Dictionary with keys: MAE, RMSE, WAPE, SMAPE, R2.
     """
     return {
         "MAE": mae(y_true, y_pred),
         "RMSE": rmse(y_true, y_pred),
-        "MAPE": mape(y_true, y_pred),
+        "WAPE": wape(y_true, y_pred),
         "SMAPE": smape(y_true, y_pred),
         "R2": r_squared(y_true, y_pred),
     }

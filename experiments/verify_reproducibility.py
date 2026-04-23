@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import torch
 
-from src.utils.config import load_config
+from src.utils.config import load_dataset_config
 
 
 def run_training(config_path: str) -> dict:
@@ -49,7 +49,8 @@ def verify_reproducibility(
     Returns:
         True if all runs are reproducible.
     """
-    config = load_config(config_path)
+    # We default to supplygraph for reproducibility check unless specified
+    config = load_dataset_config("supplygraph", config_path)
     seed = config["reproducibility"]["seed"]
 
     print("=" * 60)
@@ -109,16 +110,16 @@ def verify_reproducibility(
 
     print("\n" + "=" * 60)
     if max_diff == 0.0:
-        print("  ✅ PASS: All runs produced EXACTLY IDENTICAL results")
+        print("  [PASS] All runs produced EXACTLY IDENTICAL results")
         status = "PASS_EXACT"
     elif max_diff < 1e-6:
-        print("  ✅ PASS: Numerical precision EXCELLENT (< 1e-6)")
+        print("  [PASS] Numerical precision EXCELLENT (< 1e-6)")
         status = "PASS_EXCELLENT"
     elif max_diff < 1e-4:
-        print("  ⚠️  PASS: Numerical precision ACCEPTABLE (< 1e-4)")
+        print("  [PASS] Numerical precision ACCEPTABLE (< 1e-4)")
         status = "PASS_ACCEPTABLE"
     else:
-        print("  ❌ FAIL: Results differ across runs (>= 1e-4)")
+        print("  [FAIL] Results differ across runs (>= 1e-4)")
         status = "FAIL"
         print("\n  ⚠️  Troubleshooting:")
         print("    - Verify all seeds are set correctly")
@@ -133,9 +134,9 @@ def verify_reproducibility(
     is_reproducible = max_diff < 1e-4
 
     if is_reproducible:
-        print("\n  🎉 System is reproducible. Safe to use for paper.")
+        print("\n  [DONE] System is reproducible. Safe to use for paper.")
     else:
-        print("\n  ⚠️  Reproducibility issues detected. Fix before paper submission.")
+        print("\n  [WARN] Reproducibility issues detected. Fix before paper submission.")
 
     # ---- Compare model weights (if checkpoints exist) ----
     checkpoint_dir = config.get("output", {}).get("checkpoints_dir", "results/checkpoints/")

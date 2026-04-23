@@ -1,0 +1,98 @@
+USGS Preprocessing Pipeline (EXPANDED) — Started at 2026-03-17 20:05:22.488759
+============================================================
+
+--- Stage 1: Node Mapping ---
+Total commodities: 127
+Node ID range: 0 to 126
+Category distribution:
+  Other: 33
+  Industrial: 29
+  Rare Earths: 17
+  Construction: 15
+  Alloys: 9
+  Electronics: 9
+  Precious Metals: 8
+  Battery Materials: 5
+  Energy: 2
+
+--- Stage 2: Edge Processing ---
+Raw relationships loaded: 6805
+Unmapped edges dropped: 1965
+Unmapped materials: ['Abrasives', 'Barium', 'Calcium', 'Carbon', 'Chlorine', 'Chromite', 'Coal', 'Coltan', 'Diamond', 'Ferrite', 'Garnet', 'Glass', 'Graphite', 'Hydrogen', 'Ilmenite', 'Iron', 'Kaolin', 'Lepidolite', 'Magnesium', 'Natural Gas', 'Niobium', 'Nitrogen', 'Petroleum', 'Phosphate', 'Quartz', 'Radium', 'Rutile', 'Sand', 'Sodium', 'Spodumene', 'Steel', 'Sulfuric Acid', 'Thulium', 'Titanium', 'Uranium']
+Bidirectional edges added: 1436 reversed, 0 were duplicates
+Total edges after processing: 6276
+Edges per type:
+  [ 0] supply_chain_input: 1811
+  [ 1] technology_cluster: 1078
+  [ 2] alloy_components: 636
+  [ 3] construction_coproduction: 321
+  [ 4] electronics_coproduction: 362
+  [ 5] substitution: 490
+  [ 6] battery_coproduction: 202
+  [ 7] critical_mineral_designation: 242
+  [ 8] geopolitical_supply_risk: 189
+  [ 9] price_correlation: 466
+  [10] recycling_secondary_source: 232
+  [11] byproduct_coproduction: 121
+  [12] catalyst_role: 56
+  [13] refractory_industrial: 33
+  [14] functional_coating: 37
+Edge weight distribution:
+  high (0.9): 5677
+  medium (0.7): 592
+  low (0.5): 7
+
+--- Stage 3: Feature Extraction (EXPANDED) ---
+Main CSV shape: (8886, 12)
+Year range: 2021 - 2025
+Total years: 5
+  Production: 5 years × 127 nodes, 285 non-zero values
+  Consumption: 5 years × 127 nodes, 411 non-zero values
+  Imports: 5 years × 127 nodes, 506 non-zero values
+  Exports: 5 years × 127 nodes, 413 non-zero values
+  Price: 5 years × 127 nodes, 513 non-zero values
+  Stocks: 5 years × 127 nodes, 135 non-zero values
+  Capacity: No data found (skipped)
+  Sales: 5 years × 127 nodes, 159 non-zero values
+  Reserves: No data found (skipped)
+  Supply: 5 years × 127 nodes, 5 non-zero values
+  Employment: 5 years × 127 nodes, 240 non-zero values
+  WorldProduction: 2 years × 127 nodes, 165 non-zero values
+  WorldCapacity: 2 years × 127 nodes, 15 non-zero values
+  WorldReserves: 3 years × 127 nodes, 54 non-zero values
+  Fig2: 67 minerals matched
+  Fig10: 51 minerals matched
+  Fig12: 74 minerals matched
+  Fig3: 39 minerals matched
+  T6: 57 minerals matched
+  T7: 38 minerals matched
+  Fig13: 0 minerals matched
+  T4: 74 matched
+  T3: 36 matched
+
+--- Stage 4: Static Node Features ---
+  Output shape: (127, 13)
+  Non-zero feature values: 456
+
+--- Validation ---
+✓ Nodes: 127 (IDs 0–126)
+✓ Edges: 6276 (all valid)
+  Nodes participating in edges: 76
+  Average degree: 98.8
+  Graph density: 0.7844
+  Self-loops: 0
+✓ Production: 5 years × 127 nodes
+✓ Consumption: 5 years × 127 nodes
+✓ Imports: 5 years × 127 nodes
+✓ Exports: 5 years × 127 nodes
+✓ Price: 5 years × 127 nodes
+✓ Stocks: 5 years × 127 nodes
+✓ Sales: 5 years × 127 nodes
+✓ Supply: 5 years × 127 nodes
+✓ Employment: 5 years × 127 nodes
+✓ WorldProduction: 2 years × 127 nodes
+✓ WorldCapacity: 2 years × 127 nodes
+✓ WorldReserves: 3 years × 127 nodes
+✓ StaticNodeFeatures: (127, 13)
+
+Total processing time: 1.3 seconds

@@ -265,17 +265,18 @@ class TFTBranch(nn.Module):
 
     def __init__(self, config: dict) -> None:
         super().__init__()
-        tft_cfg = config.get("model", {}).get("tft", {})
-        self.hidden_dim = tft_cfg.get("hidden_dim", 64)
-        self.num_layers = tft_cfg.get("num_layers", 2)
-        self.num_heads = tft_cfg.get("num_heads", 4)
-        self.dropout = tft_cfg.get("dropout", 0.1)
-        self.num_unknown = tft_cfg.get("num_unknown_features", 4)
-        self.num_static = tft_cfg.get("num_static_features", 2)
+        tft_cfg = config["model"]["tft"]
+        self.hidden_dim = tft_cfg["hidden_dim"]
+        self.num_layers = tft_cfg["num_layers"]
+        self.num_heads = tft_cfg["num_heads"]
+        self.dropout = tft_cfg["dropout"]
+        self.num_unknown = tft_cfg["num_unknown_features"]
+        self.num_static = tft_cfg["num_static_features"]
 
-        data_cfg = config.get("data", {})
-        self.num_horizons = len(data_cfg.get("forecast_horizons", [1, 3, 6, 12]))
-        self.quantiles = data_cfg.get("quantiles", [0.1, 0.5, 0.9])
+        data_cfg = config["data"]
+        fusion_cfg = config["model"]["fusion"]
+        self.num_horizons = fusion_cfg["num_horizons"]
+        self.quantiles = data_cfg["quantiles"]
 
         # ---- Input projections ----
         self.input_proj = nn.Linear(self.num_unknown, self.hidden_dim)

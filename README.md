@@ -45,8 +45,8 @@ When α → 0.0: model trusts structural (GAT) signal more.
 │   │   └── complete_model.py               # End-to-end model
 │   ├── training/
 │   │   ├── trainer.py                      # Reproducible training loop
-│   │   ├── loss.py                         # Quantile + fusion loss
-│   │   └── metrics.py                      # MAE, RMSE, MAPE, SMAPE, R²
+│   │   ├── loss.py                         # Quantile + Entropy fusion loss
+│   │   └── metrics.py                      # MAE, RMSE, WAPE, SMAPE, R²
 │   └── utils/
 │       ├── seed.py                         # Deterministic seed manager
 │       ├── config.py                       # Config loader
@@ -111,9 +111,10 @@ python experiments/verify_reproducibility.py --config experiments/config.yaml --
 - Place data in `data/raw/supplygraph/` (with Edges/, Nodes/, Temporal Data/ subfolders)
 - If data not found → prints download instructions and **exits**
 
-### Future: USGS Minerals (Placeholder)
-- 90 mineral commodities, 20+ years
-- Placeholder loader implemented
+### Secondary: USGS Minerals (Production Ready)
+- **90+ mineral commodities**, 20+ years of historical data
+- Full extraction pipeline implemented in `usgs_preprocessing.py`
+- Robust evaluation using rolling-window walk-forward CV
 
 ## Reproducibility
 

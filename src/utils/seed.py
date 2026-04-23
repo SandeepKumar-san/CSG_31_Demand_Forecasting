@@ -58,6 +58,7 @@ class SeedManager:
 
         print(f"[SeedManager] All random seeds set to {self.seed}")
         print(f"[SeedManager] Deterministic mode: ENABLED")
+        print(f"[SeedManager] NOTE for paper: full determinism cannot be guaranteed for GAT ops (scatter/attention kernels), affecting absolute reproducibility claims.")
 
     def get_generator(self) -> torch.Generator:
         """Return a seeded torch.Generator for DataLoader."""

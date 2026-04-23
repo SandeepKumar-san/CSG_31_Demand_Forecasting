@@ -1,0 +1,35 @@
+% =====================================================================
+% SECTION VIII — CONCLUSION
+% File: section8_conclusion.tex
+% =====================================================================
+
+% ------------------------------------------------------------------
+\section{Conclusion}
+\label{sec:conclusion}
+% ------------------------------------------------------------------
+
+We presented ATSF, an Adaptive Temporal-Structural Fusion model
+that learns a per-instance scalar weight $\alpha$ to balance
+temporal transformer and graph attention representations for
+multi-horizon demand forecasting. The model demonstrates that the
+optimal modality balance is dataset-specific and can be recovered
+end-to-end without manual tuning. On daily FMCG data, the model
+correctly identifies temporal dominance ($\alpha{=}0.919$) and
+reduces WAPE by $30.1\%$ relative to the best neural alternative.
+On annual mineral commodity data, it identifies a mixed regime
+($\alpha{=}0.489$) and achieves a 95\% confidence interval for
+WAPE entirely below the strongest classical baseline. Perfect
+Wilcoxon consistency across five seeds ($\text{stat}{=}0$,
+$p{=}0.0625$) confirms reproducibility.
+
+Future work will explore extending multi-relational graph
+construction to include dynamic edge weights, applying the
+adaptive fusion mechanism to longer USGS time series as more
+annual data become available, and evaluating the risk scoring
+layer against real procurement outcomes in a prospective study.
+
+\smallskip
+\noindent\textbf{Disclosure.} This research did not receive any
+specific grant from funding agencies in the public, commercial,
+or not-for-profit sectors. No conflicts of interest are declared.
+All code and model weights will be released upon acceptance.

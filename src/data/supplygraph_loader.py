@@ -91,15 +91,13 @@ class SupplyGraphLoader:
 
     def __init__(self, config: dict) -> None:
         self.config = config
-        data_cfg = config.get("data", {})
-        self.data_root = data_cfg.get("supplygraph", {}).get(
-            "path", "data/raw/supplygraph/"
-        )
-        self.seq_length = data_cfg.get("sequence_length", 30)
-        self.horizons = data_cfg.get("forecast_horizons", [1, 3, 6, 12])
-        self.train_ratio = data_cfg.get("train_ratio", 0.7)
-        self.val_ratio = data_cfg.get("val_ratio", 0.15)
-        self.seed = config.get("reproducibility", {}).get("seed", 42)
+        data_cfg = config["data"]
+        self.data_root = data_cfg["path"]
+        self.seq_length = data_cfg["sequence_length"]
+        self.horizons = data_cfg["forecast_horizons"]
+        self.train_ratio = data_cfg["train_ratio"]
+        self.val_ratio = data_cfg["val_ratio"]
+        self.seed = config["reproducibility"]["seed"]
 
         # Validate dataset exists
         if not self._validate_data_exists():
@@ -244,11 +242,22 @@ class SupplyGraphLoader:
             np.stack([src_all, dst_all], axis=0), dtype=torch.long
         )
 
-        # One-hot encode edge types (4 dimensions)
+        # ======================================================================
+        # [MODIFIED BY ANTIGRAVITY]
+        # WHERE: SupplyGraphLoader.load_edges()
+        # WHY: The GAT branch architecture expects 'edge_feature_dim = num_edge_types + 1'.
+        #      The '+1' is for edge confidence weight (heavily utilized in the USGS dataset).
+        #      SupplyGraph edges don't have native weights, so it previously returned 
+        #      only the one-hot vectors (dim 4), causing a matrix multiplication crash 
+        #      (4974x4 against 5x512) when evaluated.
+        # HOW IT WORKS: We pad the edge_attr vector to (num_edge_types + 1) and 
+        #      inject a default confidence weight of 1.0 for all SupplyGraph edges.
+        # ======================================================================
         n_edge_types = len(EDGE_TYPE_MAP)
-        edge_attr = torch.zeros((len(all_types_arr), n_edge_types), dtype=torch.float)
+        edge_attr = torch.zeros((len(all_types_arr), n_edge_types + 1), dtype=torch.float)
         for i, t in enumerate(all_types_arr):
             edge_attr[i, t] = 1.0
+            edge_attr[i, n_edge_types] = 1.0  # Default weight = 1.0
 
         total = edge_index.shape[1]
         print(f"[SupplyGraph] Total edges: {total} (sorted deterministically)")
@@ -337,7 +346,9 @@ class SupplyGraphLoader:
 
         Returns:
             feature_matrix: [n_nodes, n_timepoints, n_features] array
-            demand_matrix:  [n_nodes, n_timepoints] array (Sales Order Weight)
+            demand_matrix:  [n_nodes, n_timepoints] array (Sales Order, normalized per-node)
+            target_means:   [n_nodes] array of unscaled means
+            target_stds:    [n_nodes] array of unscaled standard deviations
         """
         # Get the first signal to determine dimensions
         first_key = list(temporal_weight.keys())[0]
@@ -355,6 +366,17 @@ class SupplyGraphLoader:
             feature_matrix[:, :, idx] = values
             feature_names.append(signal_name)
 
+        # ---- Per-node per-feature Z-score normalization (Issue 19/8) ----
+        # Aligns input feature scale with normalized target scale
+        feature_means = feature_matrix.mean(axis=1, keepdims=True)   # [n_nodes, 1, n_features]
+        feature_stds  = feature_matrix.std(axis=1, keepdims=True)    # [n_nodes, 1, n_features]
+        feature_stds_safe = np.where(feature_stds < 1e-8, 1.0, feature_stds)
+        feature_matrix = (feature_matrix - feature_means) / feature_stds_safe
+        
+        # Clip outliers to handle extreme sales spikes in zero-inflated data
+        feature_matrix = np.clip(feature_matrix, -5.0, 5.0)
+        print(f"  [SupplyGraph] Input features normalized and clipped to [-5, 5]")
+
         # Demand = Sales Order (Weight) — the primary prediction target
         # Find the Sales Order signal
         demand_key = None
@@ -370,12 +392,34 @@ class SupplyGraphLoader:
 
         demand_matrix = temporal_weight[demand_key].values.astype(np.float32).T  # [n_nodes, n_timepoints]
 
+        # ---- Operational Mask (Issue 14) ----
+        # 1 = factory operating, 0 = shutdown/weekend
+        # A day is "operating" if ANY product had non-zero sales orders that day
+        sales_raw = temporal_weight[demand_key].values  # [n_timepoints, n_nodes]
+        operational_mask = (sales_raw.sum(axis=1) > 0).astype(np.float32)  # [n_timepoints]
+        
+        # Add as 5th feature channel
+        op_feature = np.tile(operational_mask, (n_nodes, 1))[:, :, np.newaxis] # [n_nodes, n_timepoints, 1]
+        feature_matrix = np.concatenate([feature_matrix, op_feature], axis=2)
+        feature_names.append("operational_mask")
+
+        # Target Normalization (Per-Node Z-Score) for stable optimization
+        target_means = demand_matrix.mean(axis=1)
+        target_stds = demand_matrix.std(axis=1)
+
+        # Prevent division by zero for dead nodes
+        target_stds_safe = np.where(target_stds == 0, 1.0, target_stds)
+
+        # Normalize per-node across time
+        demand_matrix = (demand_matrix.T - target_means).T / target_stds_safe[:, np.newaxis]
+
         print(f"\n[SupplyGraph] Feature matrix: {feature_matrix.shape} "
-              f"(nodes={n_nodes}, timepoints={n_timepoints}, features={n_features})")
+              f"(nodes={n_nodes}, timepoints={n_timepoints}, features={feature_matrix.shape[2]})")
+        print(f"  Operating days: {int(operational_mask.sum())}/{len(operational_mask)}")
         print(f"  Feature order: {feature_names}")
         print(f"  Demand proxy: '{demand_key}'")
 
-        return feature_matrix, demand_matrix
+        return feature_matrix, demand_matrix, target_means, target_stds
 
     # ------------------------------------------------------------------
     # Node Feature Construction (for GAT)
@@ -387,6 +431,7 @@ class SupplyGraphLoader:
         feature_matrix: np.ndarray,
         node_types_df: pd.DataFrame,
         nodes_index_df: pd.DataFrame,
+        feature_names: List[str] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, Any]]:
         """
         Build node feature tensor for the GAT branch.
@@ -416,17 +461,17 @@ class SupplyGraphLoader:
 
             # 2. Price level proxy: use production capacity ratio
             #    (SupplyGraph doesn't have explicit prices, so we derive a proxy)
-            prod_col_idx = None
-            for idx, name in enumerate(sorted({})):  # will use feature_matrix
-                pass
+            prod_col_idx = 1
+            if feature_names and "Production" in feature_names:
+                prod_col_idx = feature_names.index("Production")
+                
             # Use overall demand ratio as proxy
             mean_demand = np.mean(demand_matrix[i]) + 1e-8
             node_features[i, 1] = demand_matrix[i, -1] / mean_demand
 
             # 3. Production capacity utilization
-            #    Use the second feature column (Production) if available
-            if feature_matrix.shape[2] >= 2:
-                prod_data = feature_matrix[i, :, 1]  # Production column
+            if feature_matrix.shape[2] > prod_col_idx:
+                prod_data = feature_matrix[i, :, prod_col_idx]  # Production column
                 max_prod = np.max(prod_data) + 1e-8
                 node_features[i, 2] = np.mean(prod_data[-7:]) / max_prod
             else:
@@ -441,10 +486,11 @@ class SupplyGraphLoader:
         material_types = np.zeros(n_nodes, dtype=np.int64)
         lead_times = np.zeros(n_nodes, dtype=np.float32)
 
-        if "Sub-Group" in node_types_df.columns and "Node" in node_types_df.columns:
-            # Build mapping
-            unique_subgroups = sorted(node_types_df["Sub-Group"].unique())
-            sub_group_map = {sg: idx for idx, sg in enumerate(unique_subgroups)}
+        if "Group" in node_types_df.columns and "Node" in node_types_df.columns:
+            # Issue 17: Use Product Group (5 categories) instead of Sub-Group (19)
+            # Provides more signals per category embedding for the fusion layer
+            unique_groups = sorted(node_types_df["Group"].unique())
+            group_map = {g: idx for idx, g in enumerate(unique_groups)}
 
             # Build node name → index map
             node_to_idx = {}
@@ -452,25 +498,25 @@ class SupplyGraphLoader:
                 for _, row in nodes_index_df.iterrows():
                     node_to_idx[row["Node"]] = int(row["NodeIndex"])
 
-            # Assign lead times based on sub-group
-            # Different material sub-groups have different lead times (3-30 days)
-            lead_time_by_subgroup = {}
-            np.random.seed(self.seed)  # Deterministic lead time assignment
-            for sg in unique_subgroups:
-                # Assign a realistic lead time per sub-group
-                lead_time_by_subgroup[sg] = np.random.randint(3, 31)
+            # Assign lead times based on Group (Issue 17/10)
+            lead_time_by_group = {}
+            rng = np.random.RandomState(self.seed)
+            for g in unique_groups:
+                lead_time_by_group[g] = rng.randint(3, 31)
 
             for _, row in node_types_df.iterrows():
                 node_name = row["Node"]
-                sub_group = row["Sub-Group"]
+                group = row["Group"]
 
                 if node_name in node_to_idx:
                     idx = node_to_idx[node_name]
                     if idx < n_nodes:
-                        material_types[idx] = sub_group_map.get(sub_group, 0)
-                        lt = lead_time_by_subgroup.get(sub_group, 15)
+                        material_types[idx] = group_map.get(group, 0)
+                        lt = lead_time_by_group.get(group, 15)
                         lead_times[idx] = float(lt)
                         node_features[idx, 3] = lt / 30.0  # Normalize
+            
+            sub_group_map = group_map # Compatibility rename for metadata
 
         node_features_tensor = torch.tensor(node_features, dtype=torch.float)
         material_types_tensor = torch.tensor(material_types, dtype=torch.long)
@@ -482,7 +528,11 @@ class SupplyGraphLoader:
         }
 
         print(f"[SupplyGraph] Node features: {node_features_tensor.shape}")
-        print(f"  Material types: {len(sub_group_map)} unique sub-groups → {list(sub_group_map.keys())}")
+        print(f"  Material types: {len(sub_group_map)} unique sub-groups -> {list(sub_group_map.keys())}")
+        
+        import collections
+        group_counts = collections.Counter(material_types.tolist())
+        print(f"  [DEBUG] Material type distribution across all {n_nodes} nodes: {dict(group_counts)}")
 
         return node_features_tensor, material_types_tensor, metadata
 
@@ -507,7 +557,8 @@ class SupplyGraphLoader:
             static_features: [n_nodes, 2] array
         """
         static = np.zeros((n_nodes, 2), dtype=np.float32)
-        static[:, 0] = material_types.numpy().astype(np.float32)
+        # Bypassing GCP's "RuntimeError: Numpy is not available" by converting to python list first
+        static[:, 0] = np.array(material_types.tolist(), dtype=np.float32)
         static[:, 1] = lead_times / 30.0  # normalize
         return static
 
@@ -551,20 +602,20 @@ class SupplyGraphLoader:
         temporal_unit, _, _ = self.load_temporal_data("Unit")
 
         # Step 4: Build feature matrices
-        feature_matrix, demand_matrix = self.build_feature_matrix(
+        feature_matrix, demand_matrix, target_means, target_stds = self.build_feature_matrix(
             temporal_weight, temporal_unit
         )
         n_timepoints = demand_matrix.shape[1]
 
         # Step 5: Build node features for GAT
         node_features, material_types, metadata = self.build_node_features(
-            demand_matrix, feature_matrix, node_types_df, nodes_index_df
+            demand_matrix, feature_matrix, node_types_df, nodes_index_df,
+            feature_names=list(temporal_weight.keys())
         )
 
         # Step 6: Build static features for TFT
-        static_features = self.build_static_features(
-            material_types, metadata["lead_times"], n_nodes
-        )
+        # Synchronize with GAT rich features for cross-branch consistency
+        static_features = node_features.numpy()
 
         # Step 7: Construct PyTorch Geometric Data object
         from torch_geometric.data import Data
@@ -579,6 +630,10 @@ class SupplyGraphLoader:
         graph_data.lead_times = torch.tensor(
             metadata["lead_times"], dtype=torch.float
         )
+
+        # --- Injected Scaling Stats for Inverse Transform ---
+        graph_data.target_means = torch.tensor(target_means, dtype=torch.float)
+        graph_data.target_stds = torch.tensor(target_stds, dtype=torch.float)
 
         # Step 8: Chronological train/val/test split
         train_end = int(n_timepoints * self.train_ratio)
@@ -636,6 +691,7 @@ class SupplyGraphLoader:
             "dates": dates,
             "metadata": metadata,
             "edge_counts": edge_counts,
+            "num_edge_types": len(EDGE_TYPE_MAP),
         }
 
         print(f"\n[SupplyGraph] Dataset sizes:")
@@ -746,5 +802,5 @@ class SupplyGraphDataset(Dataset):
             "targets": torch.tensor(targets, dtype=torch.float),
             "material_type": torch.tensor(material_type, dtype=torch.long),
             "product_id": torch.tensor(pid, dtype=torch.long),
-            "horizon": torch.tensor(0, dtype=torch.long),  # default, can be set per-batch
+            "horizon": torch.tensor(idx % len(self.horizons), dtype=torch.long),  # dynamically cycle through target lengths
         }

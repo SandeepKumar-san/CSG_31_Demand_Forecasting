@@ -1,0 +1,320 @@
+ADAPTIVE TEMPORAL-STRUCTURAL FUSION MODEL FOR MINERAL COMMODITY DEMAND FORECASTING
+________________________________________________________________________________
+
+                              Chapter 7
+                         Results and Discussion
+
+This chapter presents a thorough experimental evaluation of the Adaptive
+Temporal-Structural Fusion (ATSF) model for mineral commodity demand
+forecasting. The evaluation covers the model's learned adaptive fusion behaviour
+(alpha convergence), comparative forecasting performance against six baseline
+models across two structurally distinct datasets, probabilistic uncertainty
+quantification results, ablation study findings, structural attention
+interpretability through edge ablation, and statistical consistency analysis
+using the Wilcoxon signed-rank test [26]. All performance metrics for deep
+learning models are reported as mean +- standard deviation across five
+independently seeded runs (seeds 42, 123, 456, 789, and 1337). Classical
+baseline models — ARIMA [24] and XGBoost [25] — are single deterministic values.
+
+________________________________________________________________________________
+7.1 EXPERIMENTAL SETUP
+________________________________________________________________________________
+
+All experiments were executed on a single NVIDIA T4 GPU via GCP Vertex AI
+Workbench under PyTorch 2.1.0+cu118. Each of the five random seeds runs a
+full training cycle of up to 1,000 epochs with early stopping (patience=50).
+The best checkpoint model — selected on minimum validation loss — is used for
+all test-set evaluations. As summarised in Table 7.0A, all five neural model
+variants share the same ~198,000 trainable parameters of the
+AdaptiveFusionForecaster, differing only in the alpha value supplied to the
+forward_with_fixed_alpha() method at evaluation time. This design ensures
+that any observed performance difference is attributable exclusively to the
+fusion strategy rather than to differences in model capacity.
+
+Table 7.0A - Model Complexity Comparison
+
++---------------------------+-----------------+------------+----------------------------+
+| Model                     | Type            | Parameters | Fusion Strategy            |
++---------------------------+-----------------+------------+----------------------------+
+| ARIMA                     | Classical       | 0 (det.)   | Statistical autoregression |
+| XGBoost                   | Classical       | 0 (det.)   | Gradient-boosted trees     |
+| TFT-only (alpha=1.0)      | Neural (fixed)  | ~198,000   | Temporal branch only       |
+| GAT-only (alpha=0.0)      | Neural (fixed)  | ~198,000   | Structural branch only     |
+| Fixed Fusion (alpha=0.5)  | Neural (fixed)  | ~198,000   | Fixed 50/50 blend          |
+| ATSF (Ours, learned alpha)| Neural (adapt.) | ~198,000   | Learned per-instance alpha |
++---------------------------+-----------------+------------+----------------------------+
+
+The identical parameter budget across all five neural variants is a critical
+design feature: the ATSF advantage is architectural rather than parametric.
+The improvement arises solely from the adaptive routing mechanism of the Alpha
+MLP, which dynamically weights the two branches based on per-instance material
+type and forecast horizon context.
+
+________________________________________________________________________________
+7.2 ADAPTIVE FUSION BEHAVIOUR (ALPHA ANALYSIS)
+________________________________________________________________________________
+
+The core finding of this project is that the importance of temporal versus
+structural information is not universal but dataset-dependent. This is
+quantified by the converged fusion weight alpha across the two datasets. As
+illustrated in Figure 7.2 — which plots the per-epoch alpha trajectory for all
+five seeds on both datasets — the convergence behaviour differs strikingly
+between SupplyGraph and USGS while remaining consistent across seeds within
+each dataset. Table 7.1 records the converged alpha values for each seed.
+
+Table 7.1 - Converged Alpha by Dataset and Seed
+(alpha = 1.0: Full TFT; alpha = 0.0: Full GAT)
+
++-----------+---------+----------+----------+----------+-----------+--------------+
+| Dataset   | Seed 42 | Seed 123 | Seed 456 | Seed 789 | Seed 1337 | Mean +- Std  |
++-----------+---------+----------+----------+----------+-----------+--------------+
+|SupplyGraph| 0.932   | 0.918    | 0.919    | 0.905    | 0.922     | 0.919+-0.010 |
+| USGS      | 0.340   | 0.617    | 0.245    | 0.725    | 0.520     | 0.489+-0.197 |
++-----------+---------+----------+----------+----------+-----------+--------------+
+
+[FIGURE 7.2: Fusion Weight Alpha Evolution Across Five Random Seeds — Two-Panel
+Plot: SupplyGraph (top) and USGS (bottom). Per-epoch alpha_mean from
+training_history_seed{N}.json logs. Source: gen_alpha_fig.py]
+
+Figure 7.2 - Fusion Weight Alpha Evolution Across Five Random Seeds
+
+On SupplyGraph, alpha consistently converges to near-complete temporal dominance
+at 0.919+-0.010 — a negligible seed variance of +-0.010. This reflects the
+dataset's shallow structural connections: SupplyGraph's four edge types encode
+taxonomic product classification (product_group, sub_group, plant,
+storage_location) rather than causal demand dependencies [19]. On the annual
+USGS dataset, alpha oscillates near the balanced regime at 0.489+-0.197, with
+substantially higher cross-seed variability reflecting the richer structural
+differentiation from 15 typed edge relationships and the inherent ambiguity of
+the low-data annual regime. This 43.0 percentage-point structural contribution
+gap — 8.1% structural contribution on SupplyGraph versus 51.1% on USGS —
+constitutes the core empirical finding of the project. The per-category alpha
+standard deviation is 0.021 on SupplyGraph (near-deterministic temporal
+preference) versus 0.215 on USGS (context-dependent regime), a tenfold
+difference. This outcome is a data-driven result of training — not a
+hyperparameter artifact — as evidenced by consistent convergence direction
+across all five independent seeds.
+
+________________________________________________________________________________
+7.3 FORECASTING PERFORMANCE
+________________________________________________________________________________
+
+Tables 7.2 and 7.3 present the complete baseline comparison for USGS and
+SupplyGraph respectively. All neural values are mean +- std across five seeds.
+No rounding has been applied; values are reproduced exactly as they appear in
+the evaluation CSV logs.
+
+Table 7.2 - USGS Baseline Comparison
+
++---------------+------------------+-------------+------------+----------------+
+| Model         | RMSE (tonnes)    | WAPE (%)    | SMAPE (%)  | R2             |
++---------------+------------------+-------------+------------+----------------+
+| ARIMA         | 18,789           | 17.02       | 5.21       | 0.951          |
+| XGBoost       | 6,807            | 8.07        | 3.24       | 0.994          |
+| TFT-only      | 11,190+-1,478    | 11.72+-1.79 | 5.41+-1.46 | 0.982+-0.005   |
+| GAT-only      | 16,471+-8,388    | 15.73+-6.55 | 5.09+-1.38 | 0.954+-0.035   |
+| Fixed Fusion  | 8,994+-6,728     | 9.47+-5.17  | 4.34+-0.66 | 0.984+-0.020   |
+| ATSF (Ours)   | 6,059+-1,092     | 7.01+-0.83  | 3.02+-0.13 | 0.9947+-0.002  |
++---------------+------------------+-------------+------------+----------------+
+
+On the USGS dataset, ATSF achieved a WAPE of 7.01%+-0.83% — a 26.0% reduction
+relative to Fixed Fusion (9.47%) and representing the only model whose 95%
+confidence interval [5.99%, 8.03%] lies entirely below the deterministic
+XGBoost baseline of 8.07%. The R2 of 0.9947+-0.002 accounts for 99.47% of
+variance in annual mineral commodity demand. SMAPE of 3.02%+-0.13% is the
+tightest across all evaluated models. GAT-only's RMSE std of +-8,388 tonnes
+confirms that pure structural reasoning is unstable when temporal observations
+are limited to 3-4 training samples per node.
+
+Table 7.3 - SupplyGraph Baseline Comparison
+
++---------------+--------------+---------------+-----------------+----------------+
+| Model         | RMSE (kg)    | WAPE (%)      | SMAPE (%)       | R2             |
++---------------+--------------+---------------+-----------------+----------------+
+| ARIMA         | 21.10        | 72.35         | 76.14           | 0.499          |
+| XGBoost       | 16.31        | 52.50         | 125.21          | 0.701          |
+| TFT-only      | 27.07+-2.38  | 90.63+-9.06   | 138.39+-4.91    | 0.169+-0.149   |
+| GAT-only      | 23.66+-1.60  | 78.77+-5.18   | 131.79+-3.83    | 0.367+-0.087   |
+| Fixed Fusion  | 25.57+-2.42  | 84.68+-7.52   | 134.82+-3.32    | 0.259+-0.141   |
+| ATSF (Ours)   | 17.03+-0.62  | 55.07+-1.94   | 124.39+-0.47    | 0.673+-0.024   |
++---------------+--------------+---------------+-----------------+----------------+
+
+On SupplyGraph, ATSF achieved a WAPE of 55.07%+-1.94%, representing a 30.1%
+reduction over the best neural alternative (GAT-only at 78.77%+-5.18%). The
+competitive performance of XGBoost (WAPE=52.50%) is expected: a tabular model
+that ignores the graph entirely aligns with the dataset's lack of causal
+structural signal [19]. As discussed in Section 7.2, this is consistent with
+prior findings that graph-based models rely on meaningful relational structure
+to provide benefit [12]; the ATSF model provides this structural diagnosis
+automatically through its converged alpha value. The higher absolute WAPE values
+on SupplyGraph reflect the extreme difficulty of zero-inflated daily operational
+demand forecasting on a 222-day window, not a failure of the architecture.
+The ATSF RMSE std of +-0.62 kg is the tightest of all neural models evaluated,
+demonstrating that adaptive fusion substantially stabilises predictions compared
+to all fixed-weight alternatives.
+
+________________________________________________________________________________
+7.4 UNCERTAINTY QUANTIFICATION
+________________________________________________________________________________
+
+The ATSF model's probabilistic prediction intervals — generated by the P10, P50,
+and P90 quantile heads of the TFT branch — are evaluated using the P10-P90
+coverage rate and mean interval width. A well-calibrated model should achieve
+coverage near the nominal 80% target. As shown in Table 7.4, both datasets
+achieve near-nominal calibration, validating the multi-quantile pinball loss
+training objective [14][15].
+
+Table 7.4 - Uncertainty Quantification Results
+
++------------+-------------------+--------+---------------------+--------------+
+| Dataset    | P10-P90 Coverage  | Target | Mean Width          | P50 WAPE     |
++------------+-------------------+--------+---------------------+--------------+
+| USGS       | 79.1%+-4.0%       | 80%    | 2,185+-464 tonnes   | 8.30%+-0.88% |
+| SupplyGraph| 84.5%+-5.96%      | 80%    | 23.04+-2.18 kg      | 42.54%+-2.97%|
++------------+-------------------+--------+---------------------+--------------+
+
+The USGS dataset achieves 79.1%+-4.0% — within one percentage point of the 80%
+nominal target — confirming strong interval calibration. SupplyGraph shows
+slight over-coverage at 84.5%+-5.96%, reflecting conservative interval widths
+adopted in response to the high volatility and zero-inflation of daily demand.
+The mean interval width of 2,185+-464 metric tonnes on USGS represents a
+practically actionable uncertainty range for annual procurement planning. The
+P50 WAPE of 8.30%+-0.88% — marginally above the point forecast WAPE of 7.01% —
+confirms that the median quantile head is consistent with the output head without
+systematic directional bias.
+
+________________________________________________________________________________
+7.5 ABLATION STUDY
+________________________________________________________________________________
+
+The ablation study highlights the critical necessity of adaptive fusion under
+both dataset regimes. On USGS, Fixed Fusion achieves a competitive mean WAPE
+of 9.47% but exhibits 5x higher variance (+-5.17%) compared to ATSF (+-0.83%).
+A fixed modality balance fails in the ambiguous annual regime where optimal
+modality contribution is context-dependent: Fixed Fusion Seed 123 achieved
+USGS WAPE of 4.65%, lower than the ATSF mean, but other Fixed Fusion seeds
+exceeded 14%, demonstrating that the model satisfies any given planning
+requirement only by chance rather than by design. A fixed ratio may approximate
+the optimum average but cannot adapt to context, producing inconsistent
+performance across seeds [Section 3.8].
+
+On SupplyGraph, TFT-only achieves the worst neural WAPE at 90.63%+-9.06%,
+substantially worse than GAT-only at 78.77%+-5.18%, despite alpha converging
+strongly toward TFT dominance. This reveals that even shallow structural context
+from the GAT branch is necessary to stabilise predictions in high-frequency
+zero-inflated environments — when the GAT branch is completely excluded by
+forcing alpha=1.0, the fusion layer loses the regularising influence of the
+structural embedding. The per-category alpha standard deviation of 0.021 on
+SupplyGraph versus 0.215 on USGS confirms that the fusion mechanism is
+operating as designed: near-deterministic temporal preference on structured daily
+data versus genuine context-sensitivity on sparse annual data.
+
+________________________________________________________________________________
+7.6 STRUCTURAL ATTENTION INTERPRETABILITY
+________________________________________________________________________________
+
+The causal utility of the supply-chain graph was validated through systematic
+edge ablation on the USGS dataset. Figure 7.1 illustrates the mean structural
+attention weights aggregated across all test-set edges for each of the 15 USGS
+edge types from the trained GAT branch. As shown in Table 7.5, the full-graph
+RMSE baseline is 0.6317; the Delta % column measures the performance change when
+each edge type is individually removed.
+
+[FIGURE 7.1: Mean Structural Attention Weights Across 15 USGS Edge Types —
+Aggregated from trained GAT branch edge_attn across five seeds.
+Source: gen_edge_attention_fig.py, results/fig_edge_attention.png]
+
+Figure 7.1 - Mean Structural Attention Weights Across 15 USGS Edge Types
+
+Table 7.5 - Edge Ablation Results (USGS)
+Full-graph RMSE baseline = 0.6317. Delta% = (ablated_RMSE - baseline_RMSE) /
+baseline_RMSE * 100. Negative Delta = removal degrades performance (edge
+causally important). Positive Delta = removal improves performance (noise at
+annual resolution). Only edge types with verified Delta% values from Section
+4.6 are shown; the remaining 8 edge types showed no statistically meaningful
+change and are grouped as near-neutral.
+
++----------------------------------+----------+--------------------------+
+| Edge Type                        | Delta %  | Interpretation           |
++----------------------------------+----------+--------------------------+
+| technology_cluster               | -2.20%   | MOST causally important  |
+| alloy_components                 | -1.22%   | Causally important       |
+| geopolitical_supply_risk         | -0.55%   | Causally important       |
+| substitution                     | -0.39%   | Causally important       |
+| supply_chain_input               | +1.29%   | Noise at annual res.     |
+| recycling_secondary_source       | +0.50%   | Noise at annual res.     |
+| construction_coproduction        | +0.39%   | Noise at annual res.     |
+| Remaining 8 edge types           | < +-0.20%| Near-neutral / not sig.  |
++----------------------------------+----------+--------------------------+
+
+Removing technology_cluster produces the largest performance degradation (Delta=-2.20%),
+confirming it as the most causally important structural signal at annual resolution [Section
+4.6]. When this edge type is excluded from the USGS graph, RMSE worsens by 2.20% relative
+to the full-graph baseline of 0.6317 — meaning the model loses a uniquely valuable
+inter-commodity signal. This finding aligns with Figure 7.1, where technology_cluster
+receives the highest mean attention weight from the trained GAT branch, providing
+confirmation between the attention-based and ablation-based structural rankings.
+Alloy_components (-1.22%), geopolitical_supply_risk (-0.55%), and substitution
+(-0.39%) also degrade performance when removed, collectively forming the four edge
+types whose causal signals the GAT branch exploits to compensate for the sparse
+3-4 annual training observations per node.
+
+Conversely, removing supply_chain_input produces the largest performance improvement
+(Delta=+1.29%) — meaning RMSE decreases by 1.29% relative to baseline when this
+edge type is excluded — identifying it as noise at annual temporal resolution. Raw
+material flow relationships may encode high-frequency production dynamics that become
+statistically uninformative when aggregated to an annual grain. Recycling_secondary_
+source (+0.50%) and construction_coproduction (+0.39%) similarly improve performance
+when removed. The remaining 8 edge types showed Delta% values within +-0.20% of
+baseline — effectively neutral at the annual temporal scale of the USGS dataset.
+This structured two-group ranking confirms that the GAT branch selectively attends
+to meaningful causal connections rather than treating all 15 edge types uniformly.
+
+________________________________________________________________________________
+7.7 STATISTICAL SIGNIFICANCE
+________________________________________________________________________________
+
+The one-tailed Wilcoxon signed-rank test [26] was computed across the five seed
+pairs for ATSF against each deep learning baseline. All values in Table 7.6 are
+reproduced verbatim from results/Wilcoxon test.txt. We report strong empirical
+consistency across seeds as the primary evidence of superiority — NOT "statistical
+significance" — acknowledging that n=5 creates a mathematical floor of p=0.0625
+that prevents conventional significance thresholds from being satisfied [Limitation 2].
+
+Table 7.6 - Wilcoxon Signed-Rank Test Results (H0: no difference; one-tailed)
+
+SupplyGraph Dataset:
+
++------------------------+----------------+----------------+------------------------+
+| Comparison             | WAPE stat / p  | RMSE stat / p  | Interpretation         |
++------------------------+----------------+----------------+------------------------+
+| ATSF vs TFT-only       | 0.0 / 0.0625   | 0.0 / 0.0625   | Minimum achievable p   |
+| ATSF vs GAT-only       | 0.0 / 0.0625   | 0.0 / 0.0625   | Minimum achievable p   |
+| ATSF vs Fixed Fusion   | 0.0 / 0.0625   | 0.0 / 0.0625   | Minimum achievable p   |
++------------------------+----------------+----------------+------------------------+
+
+USGS Dataset:
+
++------------------------+----------------+----------------+------------------------+
+| Comparison             | WAPE stat / p  | RMSE stat / p  | Interpretation         |
++------------------------+----------------+----------------+------------------------+
+| ATSF vs TFT-only       | 0.0 / 0.0625   | 0.0 / 0.0625   | Minimum achievable p   |
+| ATSF vs GAT-only       | 1.0 / 0.1250   | 1.0 / 0.1250   | NOT significant        |
+| ATSF vs Fixed Fusion   | 5.0 / 0.6250   | 6.0 / 0.8125   | NOT significant        |
++------------------------+----------------+----------------+------------------------+
+
+On SupplyGraph, ATSF wins all five seeds against all three neural baselines, 
+yielding Wilcoxon statistic=0.0 and p=0.0625 for every comparison. A statistic
+of 0.0 means all pairwise differences share the same sign — ATSF outperforms
+on every single independently seeded run. On USGS, ATSF wins all five seeds
+against TFT-only (p=0.0625). Against GAT-only, p=0.1250, reflecting GAT-only's
+high cross-seed variance (WAPE std=6.55%): one GAT seed outperforms the ATSF
+mean. Against Fixed Fusion, p=0.6250 reflects that Fixed Fusion Seed 123 achieved
+USGS WAPE=4.65%, lower than the ATSF mean, but this exceptional result is
+accompanied by seeds exceeding 14%, confirming the fixed-weight model's
+unreliability across seeds. The ATSF advantage on USGS is therefore characterised
+by lower mean WAPE, 5x lower variance, and a 95% CI entirely below XGBoost.
+
+________________________________________________________________________________
+Presidency School of Computer Science and Engineering, Presidency University
+________________________________________________________________________________

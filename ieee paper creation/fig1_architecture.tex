@@ -1,0 +1,97 @@
+% =====================================================================
+% Fig. 1 — ATSF Architecture (TikZ, single IEEE column ≈ 8.5 cm)
+% Include via: \input{fig1_architecture}  (no \begin{figure} here)
+% Requires in preamble:
+%   \usepackage{tikz}
+%   \usetikzlibrary{positioning,shapes.geometric,arrows.meta,fit,backgrounds}
+% =====================================================================
+\begin{tikzpicture}[
+  font=\scriptsize,
+  >=Stealth,
+  node distance = 1.4mm and 2mm,
+  %% Box styles
+  inbox/.style  = {draw, rounded corners=2pt, fill=gray!12,
+                   minimum width=2.8cm, minimum height=0.52cm,
+                   align=center, inner sep=2pt},
+  branch/.style = {draw, fill=blue!6,
+                   minimum width=2.8cm, minimum height=1.45cm,
+                   align=center, inner sep=3pt},
+  fuse/.style   = {draw, fill=orange!12, thick,
+                   minimum width=6.0cm, minimum height=0.82cm,
+                   align=center, inner sep=3pt},
+  outbox/.style = {draw, fill=green!8,
+                   minimum width=2.8cm, minimum height=0.52cm,
+                   align=center, inner sep=2pt},
+  risk/.style   = {draw=gray, dashed, fill=gray!5,
+                   minimum width=6.0cm, minimum height=0.52cm,
+                   align=center, inner sep=3pt},
+  lbl/.style    = {font=\tiny\itshape, text=gray},
+  arr/.style    = {->, thick},
+  darr/.style   = {->, thick, gray},
+]
+
+%% ── Row 0: Inputs ──────────────────────────────────────────────
+\node[inbox] (inT)
+  {$\mathbf{x}_t \in \mathbb{R}^{T\times d}$\\[-1pt]{\tiny Temporal features}};
+
+\node[inbox, right=of inT] (inG)
+  {$\mathcal{G}=(\mathcal{V},\mathcal{E},\mathbf{W})$\\[-1pt]{\tiny Graph structure}};
+
+%% ── Row 1: Branches ────────────────────────────────────────────
+\node[branch, below=4mm of inT, align=left] (tft) {%
+  \textbf{TFT Branch}\\[1pt]
+  VSN (feature gating)\\
+  LSTM encoder ($L{=}2$)\\
+  MH self-attn ($H{=}4$)\\[1pt]
+  $\rightarrow \mathbf{h}_t\in\mathbb{R}^d$};
+
+\node[branch, below=4mm of inG, align=left] (gat) {%
+  \textbf{GAT Branch}\\[1pt]
+  Typed edge attention\\
+  GAT layers ($L{=}2$, $H{=}4$)\\
+  15 / 4 edge relations\\[1pt]
+  $\rightarrow \mathbf{h}_s\in\mathbb{R}^d$};
+
+%% ── Row 2: Fusion ──────────────────────────────────────────────
+% Centre point between the two branches
+\coordinate (mid) at ($(tft.south)!0.5!(gat.south)$);
+\node[fuse, below=6mm of mid] (fuse) {%
+  \textbf{Adaptive Fusion Layer}\\[2pt]
+  $\alpha = \sigma\!\bigl(\mathrm{MLP}([\mathbf{h}_t',\mathbf{h}_s,\mathbf{z}_m,\mathbf{z}_h])/\tau\bigr)$\\[1pt]
+  $\hat{\mathbf{h}} = \alpha\,\mathbf{h}_t + (1{-}\alpha)\,\mathbf{h}_s$};
+
+%% ── Row 3: Outputs ─────────────────────────────────────────────
+\coordinate (fuseS) at (fuse.south);
+
+\node[outbox, below=5mm of fuse, xshift=-1.51cm] (ptout)
+  {Point forecast $\hat{y}$};
+
+\node[outbox, below=5mm of fuse, xshift=+1.51cm] (qout)
+  {Quantiles $[\hat{y}_{q_{10}},\hat{y}_{q_{90}}]$};
+
+%% ── Row 4: Risk layer ──────────────────────────────────────────
+\coordinate (outmid) at ($(ptout.south)!0.5!(qout.south)$);
+\node[risk, below=4mm of outmid] (risk)
+  {\textit{Risk scoring} (rule-based): budget stress · lead-time risk · dependency criticality};
+
+%% ── Arrows: inputs → branches ──────────────────────────────────
+\draw[arr] (inT.south) -- (tft.north);
+\draw[arr] (inG.south) -- (gat.north);
+
+%% ── Arrows: branches → fusion ──────────────────────────────────
+\draw[arr] (tft.south) -- ++(0,-3.2mm) -| (fuse.north west) node[midway,lbl,above]{$\mathbf{h}_t$};
+\draw[arr] (gat.south) -- ++(0,-3.2mm) -| (fuse.north east) node[midway,lbl,above]{$\mathbf{h}_s$};
+
+%% ── Arrows: fusion → outputs ───────────────────────────────────
+\draw[arr] (fuse.south) -- ++(0,-2.8mm) -| (ptout.north);
+\draw[arr] (fuse.south) -- ++(0,-2.8mm) -| (qout.north);
+
+%% ── Arrows: outputs → risk ─────────────────────────────────────
+\draw[darr] (ptout.south) -- ++(0,-2mm) -| (risk.north west);
+\draw[darr] (qout.south)  -- ++(0,-2mm) -| (risk.north east);
+
+%% ── Alpha annotation ───────────────────────────────────────────
+\node[lbl, right=2mm of fuse.east, align=left]
+  (ann) {$\alpha{\approx}0.919$\\(SupplyGraph)\\$\alpha{\approx}0.489$\\(USGS)};
+
+\end{tikzpicture}

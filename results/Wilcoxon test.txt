@@ -1,0 +1,107 @@
+(base) PS S:\Demand_Forecast> conda activate Demand_Forecast
+(Demand_Forecast) PS S:\Demand_Forecast> python S:\Demand_Forecast\stats_analysis.py
+
+=================================================================
+  1. MEAN ± STD ACROSS 5 SEEDS
+=================================================================
+
+--- SUPPLY GRAPH ---
+Variant                                MAE                RMSE                WAPE               SMAPE                  R2
+--------------------------------------------------------------------------------------------------------------------------
+TFT-only                10.4648±1.0466     27.0747±2.3841     90.6330±9.0640    138.3940±4.9128      0.1692±0.1488   
+GAT-only                 9.0945±0.5980     23.6616±1.6022     78.7656±5.1786    131.7942±3.8333      0.3670±0.0870
+Fixed Fusion             9.7778±0.8687     25.5654±2.4187     84.6833±7.5233    134.8244±3.3201      0.2585±0.1414
+Adaptive Fusion          6.3580±0.2235     17.0251±0.6197     55.0653±1.9354    124.3948±0.4711      0.6732±0.0236
+
+--- USGS ---
+Variant                                MAE                RMSE                WAPE               SMAPE                  R2
+--------------------------------------------------------------------------------------------------------------------------
+TFT-only              1554.1556±237.8812 11190.5020±1478.2178  11.7210±1.7940      5.4138±1.4644      0.9822±0.0048
+GAT-only              2085.8478±868.5503 16471.3434±8387.6753  15.7304±6.5501      5.0910±1.3769      0.9541±0.0345
+Fixed Fusion          1255.7358±685.2541 8993.8242±6728.2690   9.4704±5.1682      4.3412±0.6616      0.9836±0.0195
+Adaptive Fusion        929.4818±109.4031 6059.1604±1091.7457   7.0098±0.8250      3.0246±0.1275      0.9947±0.0018
+
+=================================================================
+  2. 95% CONFIDENCE INTERVALS — Adaptive Fusion (Ours)
+=================================================================
+
+--- SUPPLY GRAPH ---
+  MAE     : mean=6.3580  std=0.2235  95% CI=[6.0805, 6.6355]
+  RMSE    : mean=17.0251  std=0.6197  95% CI=[16.2557, 17.7946]
+  WAPE    : mean=55.0653  std=1.9354  95% CI=[52.6622, 57.4685]
+  SMAPE   : mean=124.3948  std=0.4711  95% CI=[123.8098, 124.9798]
+  R2      : mean=0.6732  std=0.0236  95% CI=[0.6438, 0.7025]
+
+--- USGS ---
+  MAE     : mean=929.4818  std=109.4031  95% CI=[793.6399, 1065.3237]
+  RMSE    : mean=6059.1604  std=1091.7457  95% CI=[4703.5791, 7414.7417]
+  WAPE    : mean=7.0098  std=0.8250  95% CI=[5.9854, 8.0342]
+  SMAPE   : mean=3.0246  std=0.1275  95% CI=[2.8663, 3.1829]
+  R2      : mean=0.9947  std=0.0018  95% CI=[0.9925, 0.9970]
+
+=================================================================
+  3. WILCOXON SIGNED-RANK TEST — Adaptive Fusion vs Baselines
+=================================================================
+  Primary metric: MAE (lower is better)
+  Also tested: RMSE, WAPE, R2
+  H0: no difference between Adaptive Fusion and baseline
+  p < 0.05 → statistically significant improvement
+
+--- SUPPLY GRAPH ---
+
+  Adaptive Fusion vs TFT-only:
+    MAE     : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    RMSE    : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    WAPE    : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    R2      : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+
+  Adaptive Fusion vs GAT-only:
+    MAE     : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    RMSE    : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    WAPE    : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    R2      : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+
+  Adaptive Fusion vs Fixed Fusion:
+    MAE     : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    RMSE    : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    WAPE    : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    R2      : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+
+--- USGS ---
+
+  Adaptive Fusion vs TFT-only:
+    MAE     : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    RMSE    : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    WAPE    : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+    R2      : stat=0.0000  p=0.0625  [~ marginal]  (better, wilcoxon)
+
+  Adaptive Fusion vs GAT-only:
+    MAE     : stat=1.0000  p=0.1250  [NOT significant]  (better, wilcoxon)
+    RMSE    : stat=1.0000  p=0.1250  [NOT significant]  (better, wilcoxon)
+    WAPE    : stat=1.0000  p=0.1250  [NOT significant]  (better, wilcoxon)
+    R2      : stat=1.0000  p=0.1250  [NOT significant]  (better, wilcoxon)
+
+  Adaptive Fusion vs Fixed Fusion:
+    MAE     : stat=5.0000  p=0.6250  [NOT significant]  (better, wilcoxon)
+    RMSE    : stat=6.0000  p=0.8125  [NOT significant]  (better, wilcoxon)
+    WAPE    : stat=5.0000  p=0.6250  [NOT significant]  (better, wilcoxon)
+    R2      : stat=6.0000  p=0.8125  [NOT significant]  (better, wilcoxon)
+
+=================================================================
+  4. IMPROVEMENT % OF ADAPTIVE FUSION OVER BEST BASELINE
+=================================================================
+
+--- SUPPLY GRAPH ---
+  MAE     : Adaptive=6.3580  Best baseline=9.0945 (GAT-only)  Improvement=+30.09% lower (better)
+  RMSE    : Adaptive=17.0251  Best baseline=23.6616 (GAT-only)  Improvement=+28.05% lower (better)
+  WAPE    : Adaptive=55.0653  Best baseline=78.7656 (GAT-only)  Improvement=+30.09% lower (better)
+  R2      : Adaptive=0.6732  Best baseline=0.3670 (GAT-only)  Improvement=+83.40% higher  
+
+--- USGS ---
+  MAE     : Adaptive=929.4818  Best baseline=1255.7358 (Fixed Fusion)  Improvement=+25.98% lower (better)
+  RMSE    : Adaptive=6059.1604  Best baseline=8993.8242 (Fixed Fusion)  Improvement=+32.63% lower (better)
+  WAPE    : Adaptive=7.0098  Best baseline=9.4704 (Fixed Fusion)  Improvement=+25.98% lower (better)
+  R2      : Adaptive=0.9947  Best baseline=0.9836 (Fixed Fusion)  Improvement=+1.13% higher
+
+=================================================================
+  Analysis complete.

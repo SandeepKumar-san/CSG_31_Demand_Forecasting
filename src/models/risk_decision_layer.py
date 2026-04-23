@@ -35,13 +35,13 @@ class RiskScoringLayer(nn.Module):
 
     def __init__(self, config: dict) -> None:
         super().__init__()
-        risk_cfg = config.get("model", {}).get("risk_scoring", {})
-        self.budget_threshold = risk_cfg.get("budget_threshold", 100000)
-        self.lead_time_safety_factor = risk_cfg.get("lead_time_safety_factor", 1.5)
-        self.criticality_threshold = risk_cfg.get("criticality_threshold", 0.7)
+        risk_cfg = config["model"]["risk_scoring"]
+        self.budget_threshold = risk_cfg["budget_threshold"]
+        self.lead_time_safety_factor = risk_cfg["lead_time_safety_factor"]
+        self.criticality_threshold = risk_cfg["criticality_threshold"]
 
         # Optional: learned risk calibration layer
-        hidden_dim = config.get("model", {}).get("hidden_dim", 64)
+        hidden_dim = config["model"]["hidden_dim"]
         self.risk_calibrator = nn.Sequential(
             nn.Linear(hidden_dim + 3, 32),  # embedding + 3 risk scores
             nn.ReLU(),
@@ -193,23 +193,23 @@ class RiskScoringLayer(nn.Module):
 
         if budget_risk in ["High", "Critical"]:
             actions.append(
-                "⚠️ Review budget allocation - Projected cost exceeds threshold"
+                "[WARN] Review budget allocation - Projected cost exceeds threshold"
             )
 
         if leadtime_risk == "Critical":
             actions.append(
-                "🚨 URGENT: Expedite supplier - Stock insufficient for lead time"
+                "[URGENT] Expedite supplier - Stock insufficient for lead time"
             )
         elif leadtime_risk == "High":
-            actions.append("⚠️ Consider increasing order quantity")
+            actions.append("[WARN] Consider increasing order quantity")
 
         if criticality_risk == "Critical":
-            actions.append("🔴 CRITICAL DEPENDENCY: Activate backup supplier")
+            actions.append("[CRITICAL] Activate backup supplier")
         elif criticality_risk == "High":
-            actions.append("🟡 High dependency material - Monitor closely")
+            actions.append("[WARN] High dependency material - Monitor closely")
 
         if not actions:
-            actions.append("✅ All risk levels acceptable - Maintain current plan")
+            actions.append("[OK] All risk levels acceptable - Maintain current plan")
 
         return actions
 

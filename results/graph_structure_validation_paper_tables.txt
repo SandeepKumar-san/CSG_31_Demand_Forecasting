@@ -1,0 +1,49 @@
+====================================================================================================
+GRAPH STRUCTURE VALIDATION — PAPER TABLES
+All values computed from real dataset files. No synthetic substitutions.
+====================================================================================================
+
+TABLE A: SupplyGraph — Mean Pearson |r| by Edge Type
+         (final row = matched random unconnected-pair baseline)
+----------------------------------------------------------------------------------------------------
+Edge Type                 n_total  n_valid    mean_r  mean_|r|  median_r   std_r   CI_lower   CI_upper
+----------------------------------------------------------------------------------------------------
+Plant                         360      360    0.3360    0.3409    0.2549  0.2916     0.3114     0.3704
+Product Group                 179      179    0.3531    0.3604    0.2857  0.3155     0.3158     0.4049
+Product Sub-Group              48       48    0.5724    0.5794    0.6618  0.3199     0.4901     0.6653
+Storage Location              665      665    0.3007    0.3069    0.2446  0.2624     0.2876     0.3265
+----------------------------------------------------------------------------------------------------
+RANDOM BASELINE               136      136    0.0715    0.0879   -0.0023  0.1891     0.0599     0.1208
+POOLED (all edges)           1252             0.3288    0.3348    0.2666  0.2863     0.3192     0.3500
+----------------------------------------------------------------------------------------------------
+Effect size: delta_mean_|r| (real_edges − random) = 0.2469
+
+====================================================================================================
+TABLE B: USGS — Per-Edge-Type Correlation (Important + Noise edges from ablation)
+         Spearman rho is primary metric (n=5 observations per series).
+----------------------------------------------------------------------------------------------------
+Edge Type                             Group           conf n_valid  |r|_prod  rho_prod                CI_prod  |r|_cons  rho_cons
+----------------------------------------------------------------------------------------------------
+technology_cluster                IMPORTANT             OK     184    0.5560    0.0640        [0.5131,0.5986]    0.5009    0.1966
+alloy_components                  IMPORTANT             OK      92    0.5790   -0.0205        [0.5183,0.6374]    0.5162    0.1756
+geopolitical_supply_risk          IMPORTANT             OK      24    0.7156    0.1177        [0.6314,0.7939]    0.4598    0.0842
+substitution                      IMPORTANT             OK      70    0.5881    0.1582        [0.5197,0.6543]    0.4881    0.1553
+electronics_coproduction          IMPORTANT             OK      81    0.5552    0.1042        [0.4921,0.6182]    0.4748    0.1089
+battery_coproduction              IMPORTANT             OK      28    0.5644    0.3492        [0.4521,0.6762]    0.4456    0.2341
+supply_chain_input                    NOISE             OK     465    0.5024   -0.0158        [0.4762,0.5287]    0.4764    0.0595
+recycling_secondary_source            NOISE             OK      61    0.5631    0.1687        [0.4926,0.6303]    0.5325    0.1297
+construction_coproduction             NOISE             OK     146    0.5377    0.0713        [0.4863,0.5892]    0.5124    0.1203
+----------------------------------------------------------------------------------------------------
+Group mean IMPORTANT: mean_|r|_prod=0.6097  mean_|r|_cons=0.4912
+Group mean NOISE:     mean_|r|_prod=0.5344  mean_|r|_cons=0.5071
+
+====================================================================================================
+TABLE C: Ablation Correlation — |ΔRMSE%| (from Table V) vs mean_|r| (computed)
+----------------------------------------------------------------------------------------------------
+  n_edge_types_used : 7
+  dropped           : []
+  pearson_r_prod    : -0.3102
+  spearman_rho_prod : -0.2883
+  pearson_r_cons    : -0.0154
+  spearman_rho_cons : -0.1802
+====================================================================================================

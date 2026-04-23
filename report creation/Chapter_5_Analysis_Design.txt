@@ -1,0 +1,170 @@
+ADAPTIVE TEMPORAL-STRUCTURAL FUSION MODEL FOR MINERAL COMMODITY DEMAND FORECASTING
+________________________________________________________________________________
+
+                              Chapter 5
+                         Analysis and Design
+
+This chapter describes the comprehensive analysis and design of the Adaptive
+Temporal-Structural Fusion (ATSF) system. It details the system's software and
+hardware requirements, outlines the high-level system architecture and data flow,
+presents the statistical characteristics of the two primary datasets utilised
+for evaluation, and examines the graph construction methodology governing the
+relational topology of both the SupplyGraph and USGS networks.
+
+________________________________________________________________________________
+5.1 SYSTEM REQUIREMENTS
+________________________________________________________________________________
+
+The ATSF model was developed, trained, and evaluated using an environment
+optimised for graph neural network compilation and multi-modal spatio-temporal
+data processing. Table 6.1 details the verified hardware and software software
+requirements, alongside the model hyperparameters explicitly set in the
+project's configuration environment.
+
+Table 6.1 - Software and System Requirements
+
++-----------------------------------+------------------------------------------+
+| Component / Parameter             | Specification                            |
++-----------------------------------+------------------------------------------+
+| Programming Language              | Python 3.10                              |
+| Computing Platform                | GCP Vertex AI Workbench                  |
+| GPU Accelerator                   | Single NVIDIA T4 GPU (16GB GDDR6 VRAM)   |
+| Core Deep Learning Framework      | PyTorch [22] (2.1.0+cu118)               |
+| Graph Neural Network Library      | PyTorch Geometric [23]                   |
+| Optimizer                         | Adam                                     |
+| Learning Rate                     | 1e-3                                     |
+| LR Decay Epochs                   | 27, 47, 63                               |
+| Regularisation Lambda             | 0.1 (SupplyGraph) / 0.05 (USGS)          |
+| Temperature tau                   | 2.0                                      |
+| Total Trainable Parameters        | ~198,000                                 |
+| Hidden Dimension d                | 128 (SupplyGraph) / 64 (USGS)            |
+| Attention Heads H                 | 4                                        |
+| LSTM Layers                       | 2                                        |
+| Dropout Rate                      | 0.2 (SupplyGraph) / 0.3 (USGS)           |
+| Training Epochs / Patience        | Up to 70 epochs / Patience 50            |
++-----------------------------------+------------------------------------------+
+
+________________________________________________________________________________
+5.2 SYSTEM BLOCK DIAGRAM
+________________________________________________________________________________
+
+The ATSF system block diagram (Figure 5.1) illustrates the parallel processing
+architecture of the model. The architecture is constructed to ensure that
+temporal and structural signals are evaluated independently before fusion,
+allowing the adaptive layer to diagnose their relative predictive utility.
+
+The sequence operates as follows:
+(1) Data Inputs & Preprocessing: Raw SupplyGraph CSV and USGS CSV files are
+ingested, sequentially normalised, and converted into structured PyTorch [22]
+tensors.
+(2) Graph Construction: The parsed data is structured into PyTorch Geometric [23]
+Data objects encoding multi-relational adjacencies.
+(3) Parallel Branch Processing:
+    - TFT Branch (src/models/tft_branch.py): Extracts sequential patterns via
+      a Variable Selection Network, LSTM, and multi-head self-attention.
+    - GAT Branch (src/models/gat_branch.py): Aggregates structural
+      intercommodity signals via typed attention gates.
+(4) Adaptive Fusion Layer (src/models/fusion_layer.py): Combines the two branch
+embeddings using the learned scalar alpha.
+(5) Demand Output Head: Generates deterministic point forecasts and probabilistic
+quantile predictions.
+(6) Risk Scoring Interface: Translates the mathematical outputs into actionable
+supply-chain risk assessments (budget stress, lead-time risk, criticality).
+
+[FIGURE 5.1: System Block Diagram - Expanded ATSF architecture showing parallel
+TFT and GAT branches, Adaptive Fusion layer, Output Head, and Risk Scoring.]
+
+Figure 5.1 - System Block Diagram
+
+________________________________________________________________________________
+5.3 SYSTEM FLOW CHART
+________________________________________________________________________________
+
+The end-to-end system flow is orchestrated across nine sequential pipeline
+stages, bridging raw data acquisition to final statistical results.
+
+1. Raw Data (data/raw/): Persistent storage of unmodified SupplyGraph and
+   USGS textual and tabular sources.
+2. Preprocessing: Handled by supplygraph_loader.py, usgs_loader.py,
+   and usgs_preprocessing.py, converting textual data into zero-inflated
+   or temporally sparse tensors.
+3. Graph Construction: Assembled by graph_builder.py, parsing edge lists
+   into heterogeneous typed graph topologies.
+4. Training: Orchestrated by trainer.py (via the train.py entry point),
+   applying the multi-quantile pinball loss and boundary regularisation.
+5. Multi-seed Runs: Automated by run_multi_seed.py across five distinct
+   seeds (42, 123, 456, 789, 1337) for rigorous reproducibility.
+6. Baseline Comparison: Evaluated by run_classical_baselines.py (ARIMA, XGBoost)
+   and run_graph_baselines.py (TFT-only, GAT-only, Fixed Fusion ablations).
+7. Evaluation: Processed by evaluate.py, applying the trained models to
+   the strictly chronological held-out test sets.
+8. Risk Scoring: Executed by demo_risk_scoring.py, mapping tensor outputs
+   to categorical business logic thresholds.
+9. Results: Written to the results/ directory, capturing JSON logs,
+   metrics CSVs, and generated trajectory figures.
+
+[FIGURE 5.2: System Flow Chart - End-to-end pipeline flow covering data
+ingestion through to evaluation and risk scoring.]
+
+Figure 5.2 - System Flow Chart
+
+________________________________________________________________________________
+5.4 DATASET DESCRIPTION
+________________________________________________________________________________
+
+The ATSF model evaluates against two datasets with diametrically opposed
+structural and temporal characteristics, testing the robustness of the
+adaptive fusion mechanism. Their detailed properties are shown in Table 5.1.
+
+Table 5.1 - Dataset Description Comparison
+
++---------------------------+---------------------------------+------------------------+
+| Property                  | SupplyGraph [19]                | USGS [20]              |
++---------------------------+---------------------------------+------------------------+
+| Nodes                     | 40                              | 127                    |
+| Edge types                | 4                               | 15                     |
+| Time coverage             | 222 trading days (2022-2023)    | 5 years (2019-2023)    |
+| Lookback window T         | 30 days                         | 3 years                |
+| Forecast horizon h        | {1, 3, 6, 12} days              | 1 year                 |
+| Train/val/test split      | 70/10/20 chronological          | 70/10/20 chronological |
+| Training samples/node/seed| ~155 days                       | 3-4 years              |
++---------------------------+---------------------------------+------------------------+
+
+________________________________________________________________________________
+5.5 GRAPH CONSTRUCTION DESIGN
+________________________________________________________________________________
+
+The graph construction process, handled by src/data/graph_builder.py, uniquely
+structures each dataset's topological inter-dependencies using categorically
+typed edges.
+
+5.5.1 USGS MINERAL COMMODITY GRAPH:
+The USGS network connects 127 mineral commodity nodes using 15 distinct,
+causally expressive edge types. These 15 typed relations represent physical,
+geopolitical, and economic linkages extracted from the USGS Mineral Commodity
+Summaries:
+(1) technology_cluster, (2) alloy_components, (3) construction_coproduction,
+(4) electronics_coproduction, (5) substitution, (6) battery_coproduction,
+(7) critical_mineral_designation, (8) geopolitical_supply_risk,
+(9) price_correlation, (10) recycling_secondary_source,
+(11) byproduct_coproduction, (12) catalyst_role, (13) refractory_industrial,
+(14) functional_coating, and (15) supply_chain_input.
+This rich semantic variety provides the GAT branch with robust structural
+context capable of partially compensating for the sparse 3-4 year temporal
+training window.
+
+5.5.2 SUPPLYGRAPH TAXONOMIC GRAPH:
+The SupplyGraph network connects 40 nodes via 4 structural edge types:
+product_group, sub_group, plant, and storage_location. Unlike the USGS graph,
+SupplyGraph's four edge types encode taxonomic product classification, not
+causal demand dependencies. They indicate product co-membership in
+organisational categories rather than direct supply-chain substitution or
+co-production relationships. This structural shallowness is reflected in
+the model's converged alpha approximation of 0.919, demonstrating that the
+ATSF mechanism correctly identifies the relative informational weakness of
+taxonomic links and autonomously routes prediction emphasis back to the
+temporal branches.
+
+________________________________________________________________________________
+Presidency School of Computer Science and Engineering, Presidency University
+________________________________________________________________________________

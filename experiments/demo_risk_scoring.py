@@ -222,7 +222,8 @@ def main(config_path: str = "experiments/config.yaml") -> None:
         print("  " + "-" * 50)
 
     # ---- Save report ----
-    reports_dir = config.get("output", {}).get("risk_reports_dir", "results/risk_reports/")
+    base_reports = config.get("output", {}).get("risk_reports_dir", "results/risk_reports/")
+    reports_dir = os.path.join(base_reports, "supplygraph")
     os.makedirs(reports_dir, exist_ok=True)
     report_path = os.path.join(reports_dir, "risk_report.json")
     with open(report_path, "w") as f:

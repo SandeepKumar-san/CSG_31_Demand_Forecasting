@@ -1,0 +1,49 @@
+% =====================================================================
+% SECTION III — PROBLEM FORMULATION
+% File: section3_problem.tex
+% =====================================================================
+
+% ------------------------------------------------------------------
+\section{Problem Formulation}
+\label{sec:problem}
+% ------------------------------------------------------------------
+
+Let $\mathcal{G} = (\mathcal{V}, \mathcal{E}, \mathbf{W})$ denote
+a directed, typed supply-chain graph where $\mathcal{V}$ is the
+set of commodity or product nodes ($|\mathcal{V}|{=}127$ for USGS,
+$40$ for SupplyGraph), $\mathcal{E} \subseteq \mathcal{V} \times
+\mathcal{V}$ is the set of typed directed edges, and $\mathbf{W}$
+encodes edge-type labels and confidence weights.
+
+Each node $v_i$ is associated with a historical demand sequence
+$\mathbf{X}_i = [\mathbf{x}^{(t-T+1)}_i, \ldots,
+\mathbf{x}^{(t)}_i] \in \mathbb{R}^{T \times d_x}$ over a lookback
+window of $T$ timesteps, where $d_x$ is the number of input
+features. The forecasting objective is to learn a function
+
+\begin{equation}
+  f_\theta: \bigl(\mathbf{X}_i,\,\mathcal{G}\bigr)
+  \;\longrightarrow\;
+  \hat{y}_i^{(t+1:\,t+h)}
+  \label{eq:objective}
+\end{equation}
+
+\noindent that maps the joint temporal-structural input to a
+$h$-step-ahead demand forecast for each node $v_i$, minimising
+a scale-normalised weighted absolute percentage error (WAPE)
+across the test set.
+
+We further require the model to produce calibrated uncertainty
+estimates $(\hat{y}_{q_{10}},\, \hat{y}_{q_{90}})$ and an
+interpretable, per-instance scalar weight $\alpha_i \in (0,1)$
+that quantifies the relative contribution of temporal vs.\
+structural information to the final prediction for node $v_i$.
+
+\smallskip
+\noindent\textbf{Disclosure.} The SupplyGraph dataset covers
+222 trading days (2022–-2023). Sequence length $T{=}30$ days for
+SupplyGraph and $T{=}3$ years for USGS. Forecast horizon
+$h \in \{1, 3, 6, 12\}$ days for SupplyGraph and $h{=}1$ year
+for USGS. The small annual USGS dataset is a known limitation;
+results should be interpreted in the context of a low-data regime
+with only five seed repetitions.

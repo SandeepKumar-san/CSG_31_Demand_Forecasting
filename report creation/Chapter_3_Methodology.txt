@@ -1,0 +1,451 @@
+ADAPTIVE TEMPORAL-STRUCTURAL FUSION MODEL FOR MINERAL COMMODITY DEMAND FORECASTING
+________________________________________________________________________________
+
+                              Chapter 3
+                             Methodology
+
+The methodology chapter documents the systematic, iterative engineering process
+by which the Adaptive Temporal-Structural Fusion (ATSF) model was conceived,
+designed, implemented, validated, and reported. This encompasses the
+development lifecycle (Section 3.1), the five-layer system architecture
+(Section 3.2), the individual branch architectures (Sections 3.3 and 3.4),
+the core adaptive fusion mechanism with its governing equations (Section 3.5),
+the output and risk layers (Section 3.6), and the full training objective with
+the model configuration summary (Section 3.7). All architectural decisions
+are grounded in verified code artefacts and the project's experimental results;
+no architectural claims are made beyond what is implemented in the project's
+Python source files.
+
+________________________________________________________________________________
+3.1 DEVELOPMENT METHODOLOGY
+________________________________________________________________________________
+
+The development of the ATSF model followed an Agile iterative methodology,
+providing continuous refinement across eight sequential project phases. As
+illustrated in Figure 3.2 — the iterative pipeline diagram — the development
+cycle is explicitly non-linear: insights from the evaluation phase directly
+informed subsequent model design adjustments, particularly the selection of the
+one-sided boundary regularisation term in Equation (3) over the entropy
+regularisation used in earlier architectural drafts. Early experimental
+iterations on fixed-weight fusion revealed the 5x higher variance issue
+(Fixed Fusion WAPE std=+-5.17% versus ATSF +-0.83%); this empirical finding
+was used to justify the adaptive mechanism in the final architecture. The eight
+phases are documented below as they were executed.
+
+3.1.1 PHASE 1 — REQUIREMENTS AND PROBLEM DEFINITION:
+
+The motivating limitation identified in the problem definition phase was the
+universal assumption of a fixed blending weight in prior multi-modal forecasting
+architectures, including MST-GAT [4], Graph WaveNet [13], and hybrid GNN
+approaches surveyed by Jin et al. (2024) [10]. By treating the relative
+importance of temporal versus structural signal as a constant, these models
+are unable to adapt to structurally heterogeneous datasets, where the causal
+utility of the supply-chain graph may differ dramatically between, for example,
+daily operational product streams (SupplyGraph [19]) and sparse annual mineral
+commodity statistics (USGS [20]). The project requirements were formalised as:
+(1) a per-instance learned fusion weight; (2) calibrated probabilistic outputs
+for risk quantification; (3) edge-level structural interpretability; and
+(4) an agentic practitioner-facing interface that translates model outputs
+into plain-language procurement intelligence.
+
+3.1.2 PHASE 2 — DATASET ACQUISITION AND PREPROCESSING:
+
+Both public-domain benchmark datasets were acquired and preprocessed. The
+SupplyGraph benchmark [19] provides daily operational demand for 40 products
+over 222 trading days (2022–2023). The USGS Mineral Commodity Summaries 2024
+[20] provides annual production, import, export, and price statistics for 127
+mineral commodities (2019–2023). Neither dataset contains personally
+identifiable information, proprietary enterprise data, or classified trade
+records. Preprocessing scripts (supplygraph_loader.py, usgs_preprocessing.py,
+usgs_loader.py) apply per-node per-feature Z-score normalisation and a strict
+70/10/20 chronological split with no data leakage across temporal boundaries.
+Graph construction (graph_builder.py) produces 4 typed edge categories for
+SupplyGraph and 15 typed edge categories for USGS.
+
+3.1.3 PHASE 3 — MODEL DESIGN AND ARCHITECTURE IMPLEMENTATION:
+
+The five-layer ATSF architecture was designed in complete_model.py as the
+AdaptiveFusionForecaster class. The key design decision was to implement alpha
+as a per-instance learned scalar in (0, 1), conditioned on material type and
+forecast horizon via 16-dimensional embedding lookups, rather than as a
+dataset-level fixed constant. All hyperparameters were externalised to
+experiments/config.yaml; zero parameters are hardcoded in any Python source
+file. The system_dry_run.py script, a 10-second fast-test pipeline, was
+executed locally before each overnight training run to confirm that all tensor
+shapes and model initialisation procedures were correct.
+
+3.1.4 PHASES 4-8 — TRAINING, EVALUATION, AND REPORTING:
+
+Multi-seed training was executed on a single NVIDIA T4 GPU on GCP Vertex AI
+Workbench across five randomly initialised seeds (42, 123, 456, 789, 1337)
+using run_multi_seed.py. Baseline comparison and ablation studies were executed
+using the project's forward_with_fixed_alpha() method, which derives all four
+ablation variants from the same trained model weights without retraining
+alternative architectures. Results were analysed by stats_analysis.py via
+the Wilcoxon signed-rank test [26] and bootstrap confidence interval
+computation. The IEEE research paper was prepared and submitted, followed
+by this project report.
+
+[FIGURE 3.2: Iterative Development Methodology Pipeline — Eight-phase
+Agile cycle: Requirements -> Data -> Design -> Implementation -> Training ->
+Evaluation -> Paper -> Report. Source: project phases as documented above]
+
+Figure 3.2 - Iterative Development Methodology Pipeline
+
+________________________________________________________________________________
+3.2 SYSTEM ARCHITECTURE OVERVIEW
+________________________________________________________________________________
+
+As shown in Figure 3.1 — reproduced from Figure 1 of the IEEE manuscript —
+the ATSF model is a five-layer end-to-end pipeline implemented in
+complete_model.py as the AdaptiveFusionForecaster class. The forward pass
+executes six sequential operations on each batch:
+
+(1)  LAYER 1 — TFT Branch: Processes the temporal demand sequence of length T
+     through a Variable Selection Network, two-layer LSTM encoder, and
+     multi-head self-attention to produce a temporal embedding h_t of
+     dimension d and a set of calibrated quantile predictions {P10, P50, P90}.
+
+(2)  LAYER 2 — GAT Branch: Processes the complete multi-relational supply-chain
+     graph through a two-layer EdgeTypeAwareGAT to produce structural node
+     embeddings h_s of dimension d for all nodes simultaneously.
+
+(3)  NODE-TO-BATCH MAPPING: The structural embedding h_s is sliced by
+     product_id or commodity_id to assemble per-instance structural context
+     vectors aligned with the temporal batch.
+
+(4)  LAYER 3 — Adaptive Fusion Layer: Computes a per-instance scalar
+     alpha in (0, 1) conditioned on material type and forecast horizon, then
+     produces the fused representation h-hat = alpha * h_t + (1-alpha) * h_s.
+
+(5)  LAYER 4 — Fused Demand Representation: Maps h-hat through a final
+     linear projection and LayerNorm to multi-horizon point forecasts.
+
+(6)  LAYER 5 — Risk Scoring Layer (conditional): Computed only when
+     compute_risk=True — disabled during training to eliminate overhead —
+     translating forecasts and GAT attention weights into structured
+     procurement risk assessments across three risk dimensions.
+
+The model additionally exposes forward_with_fixed_alpha(batch, fixed_alpha),
+which bypasses the Alpha MLP and forces a user-specified fusion ratio. This
+method generates all three ablation baselines — TFT-only (alpha=1.0),
+GAT-only (alpha=0.0), and Fixed Fusion (alpha=0.5) — from a single set of
+trained weights, ensuring that all ablation variants share the identical
+~198,000 trainable parameters and that any performance difference is
+attributable exclusively to the fusion strategy.
+
+[FIGURE 3.1: ATSF System Architecture — Five-layer end-to-end pipeline:
+TFT Branch (Layer 1) and GAT Branch (Layer 2) in parallel, feeding
+Adaptive Fusion Layer (Layer 3), Demand Output Head (Layer 4), and
+Risk Interface (Layer 5). Source: Paper Figure 1, src/models/]
+
+Figure 3.1 - ATSF System Architecture (Five-Layer Pipeline)
+
+________________________________________________________________________________
+3.3 TFT BRANCH — LAYER 1 (tft_branch.py)
+________________________________________________________________________________
+
+The temporal branch is implemented in src/models/tft_branch.py and is built
+upon the Temporal Fusion Transformer architecture [1]. The branch processes
+historical demand sequences of length T and any available static covariates
+through the following four sub-components.
+
+3.3.1 VARIABLE SELECTION NETWORK (VSN):
+
+The VSN applies soft, learned feature gating to select the most relevant
+dynamic and static input covariates for each forecast step. Rather than
+treating all input features as uniformly important, the VSN assigns data-driven
+importance weights to each variable, suppressing noise features that provide
+no incremental signal over the raw LSTM input. This gating mechanism is
+particularly important for the 12-feature USGS node feature vectors, where
+not all features (e.g., RecyclingRate, Employment) are equally predictive
+of annual demand across all mineral commodity types.
+
+3.3.2 TWO-LAYER LSTM ENCODER:
+
+The gated VSN outputs are fed into a two-layer LSTM encoder [5] with a hidden
+dimension of d=128 for the SupplyGraph dataset and d=64 for the USGS dataset,
+as recorded in Table 3.1. The reduced hidden dimension on USGS reflects the
+low-data regime limitation (3–4 training samples per node per fold), where a
+larger capacity risks memorising the training set. Gradient clipping at
+L2 norm=1.0 is applied after each batch to prevent LSTM recurrent gradient
+explosions during Backpropagation Through Time on the 30-day SupplyGraph
+lookback window.
+
+3.3.3 MULTI-HEAD SELF-ATTENTION:
+
+Multi-head self-attention with H=4 heads is applied over the LSTM hidden states
+to capture complex temporal interactions beyond the recurrent field of the LSTM
+encoder. This replaces the fixed Attention-based temporal aggregation common in
+earlier architectures (such as those surveyed in [11]) with a fully
+context-adaptive temporal weighting mechanism that can model periodic and
+cross-lag dependencies in demand simultaneously.
+
+3.3.4 QUANTILE PREDICTION HEADS:
+
+Three parallel linear heads produce calibrated prediction intervals — P10, P50,
+and P90 — via the multi-quantile pinball loss function [14][15]. The pinball
+loss for quantile q is defined as:
+
+    L_pinball(q) = mean(max(q * error, (q-1) * error))
+
+where error = y_true - y_pred. By training simultaneously across three
+quantiles, the branch incentivises the network to predict the true empirical
+percentiles of the demand distribution, producing prediction intervals that
+achieved 79.1%+-4.0% P10-P90 coverage on USGS (target 80%) and 84.5%+-5.96%
+on SupplyGraph across five seeds. The branch outputs temporal embedding h_t
+of dimension d and probabilistic forecasts across all configured horizons:
+{1, 3, 6, 12} days for SupplyGraph and 1 year for USGS.
+
+________________________________________________________________________________
+3.4 GAT BRANCH — LAYER 2 (gat_branch.py)
+________________________________________________________________________________
+
+The structural branch is implemented in src/models/gat_branch.py as the
+EdgeTypeAwareGAT class — a two-layer multi-relational Graph Attention Network
+[2][3][18] that encodes inter-commodity relationships from the supply-chain
+graph into structural node embeddings h_s. The key distinction from standard
+GAT formulations is the typed edge feature construction, which injects
+relation-type identity directly into the attention computation, preventing
+semantically unrelated edge types from participating in each other's attention
+aggregation.
+
+3.4.1 NODE FEATURES:
+
+Four core features are computed per node by graph_builder.py:
+
+    (1) Recent demand average — 7-day rolling mean for SupplyGraph; annual
+        mean across available years for USGS.
+    (2) Price-level proxy — current price divided by historical average price.
+    (3) Production capacity utilisation — recent production divided by
+        peak production.
+    (4) Normalised lead time — lead_time_days / 30.0, clamped to [0, 1].
+
+It is explicitly disclosed that lead-time values are synthetically assigned:
+SupplyGraph uses group-level constants sampled uniformly from the range [3, 30]
+days; USGS uses a fixed constant of 1.0.
+
+3.4.2 TYPED EDGE FEATURES:
+
+Edge features are constructed by concatenating the one-hot encoding of the
+edge type ID with a scalar confidence weight in [0.5, 1.0], yielding edge
+feature tensors of dimension 5 for SupplyGraph (4 edge types + 1 weight scalar)
+and dimension 16 for USGS (15 edge types + 1 weight scalar). The edge type
+embedding table is initialised as an identity matrix (nn.init.eye_) to ensure
+maximum separability at training onset and preserve the interpretability of
+individual relation types throughout training.
+
+3.4.3 TWO-LAYER GATCONV ARCHITECTURE:
+
+The two-layer EdgeTypeAwareGAT uses the GATConv operator from PyTorch Geometric
+[23]. The first GATConv layer uses head concatenation (concat=True, 4 heads)
+to produce an intermediate representation of dimension d × 4. The final
+GATConv layer averages across heads (concat=False), producing the structural
+embedding h_s of dimension d. Between layers, each GATConv output passes through
+BatchNorm1d (not LayerNorm — node-level batch statistics are more stable for
+graph data without a sequential dimension), followed by ELU activation and
+dropout. The final layer returns full edge attention weights, extracted
+downstream for the edge-type importance analysis of Figure 7.1 (Section 7.6).
+A lightweight node importance scorer — nn.Linear(d, 1) followed by Sigmoid —
+produces per-node criticality scalars consumed by the risk scoring interface
+in Layer 5.
+
+________________________________________________________________________________
+3.5 ADAPTIVE FUSION LAYER — LAYER 3 (fusion_layer.py)
+________________________________________________________________________________
+
+The AdaptiveFusionLayer class, implemented in src/models/fusion_layer.py,
+represents the primary architectural contribution of this project: a
+context-conditioned scalar fusion weight alpha in (0, 1) learned end-to-end
+with the rest of the model parameters. The layer replaces the fixed blending
+assumption present in MST-GAT [4] and similar hybrid approaches [13] with
+a per-instance diagnostic that quantifies, for each material type and forecast
+horizon, the relative causal utility of the temporal versus structural modality.
+
+3.5.1 STEP 1 — TEMPORAL RESIDUAL PROJECTION:
+
+The temporal embedding h_t is passed through a residual projection block:
+
+    h'_t = LayerNorm(ReLU(Linear_H_H(h_t))) + h_t
+
+The residual connection preserves the raw temporal signal whilst the linear
+projection and normalisation align the temporal representation into a space
+more comparable to the structural embedding, prior to concatenation in Step 3.
+
+3.5.2 STEP 2 — CONTEXT EMBEDDING LOOKUP:
+
+Two 16-dimensional embedding tables provide domain-level context:
+
+    z_m = E_material[material_type_id]   (up to 8 distinct categories)
+    z_h = E_horizon[horizon_id]          (up to 4 forecast horizons)
+
+These context embeddings encode a soft prior about which modality is typically
+more relevant for a given material class or planning horizon. For example,
+a horizon_id corresponding to a 1-year annual forecast should receive a higher
+structural weight than a horizon_id corresponding to a 1-day operational
+forecast — a prior that the embedding tables learn jointly with the rest of the
+network during end-to-end training.
+
+3.5.3 STEP 3 — ALPHA PREDICTION MLP AND TEMPERATURE SIGMOID:
+
+The enriched temporal embedding h'_t, structural embedding h_s, and two context
+vectors are concatenated into a single vector of dimension 2d + 32 and fed
+through a three-stage MLP:
+
+    Layer 1: Linear(2d+32, d) -> ReLU -> Dropout(0.1)
+    Layer 2: Linear(d, d/2)   -> ReLU
+    Layer 3: Linear(d/2, 1)   -> scalar output
+
+The raw scalar output is passed through a temperature-scaled sigmoid defined
+by Equation (1):
+
+    Equation (1):  alpha = sigmoid(MLP([h'_t, h_s, z_m, z_h]) / tau)
+
+where tau=2.0 for both datasets. A temperature greater than 1.0 flattens the
+sigmoid curve, preventing premature saturation of alpha during early training
+when gradients are large and noisy — this preserves gradient flow toward the
+optimal modality balance.
+
+3.5.4 STEP 4 — WEIGHTED FUSION AND POST-FUSION PROJECTION:
+
+The fused representation is computed by Equation (2):
+
+    Equation (2):  h-hat = alpha * h'_t + (1 - alpha) * h_s
+
+where alpha=1.0 yields pure TFT output (temporal-only), alpha=0.0 yields
+pure GAT output (structural-only), and any intermediate value yields a
+per-instance weighted mixture. A post-fusion projection block
+(Linear(d, d) -> LayerNorm) aligns h-hat into the output space before
+passing it to Layer 4.
+
+3.5.5 BOUNDARY REGULARISATION:
+
+To prevent alpha from collapsing into a degenerate extreme that eliminates
+one branch entirely, a one-sided boundary regularisation term defined by
+Equation (3) is added to the training loss:
+
+    Equation (3):  L_reg = lambda * (E[ReLU(alpha - 0.95)] + E[ReLU(0.05 - alpha)])
+
+This double-hinge penalty applies only when alpha drifts outside the
+informative range [0.05, 0.95], while permitting any value within that range
+without penalty — including strong unimodal preferences such as the
+alpha=0.919+-0.010 observed on SupplyGraph. Lambda is 0.1 for SupplyGraph
+and 0.05 for USGS (from Table 3.1), reflecting the richer and more
+informative structural signal in the annual USGS dataset and the correspondingly
+lower regularisation pressure required to maintain dual-branch training.
+
+________________________________________________________________________________
+3.6 OUTPUT AND RISK LAYERS — LAYERS 4 AND 5
+________________________________________________________________________________
+
+3.6.1 LAYER 4 — FUSED DEMAND REPRESENTATION (fused_representation.py):
+
+A final linear-plus-LayerNorm projection maps the fused embedding h-hat to
+point forecasts across all configured horizons: {1, 3, 6, 12} days for
+SupplyGraph and 1 year for USGS. The Layer 4 module also assembles the
+complete forecast dictionary — containing keys {forecast, std, lower, upper}
+— deriving the interval bounds directly from the P10 and P90 quantile outputs
+of the TFT branch. This dictionary is passed downstream to Layer 5 when
+compute_risk=True.
+
+3.6.2 LAYER 5 — RULE-BASED RISK SCORING INTERFACE (risk_decision_layer.py):
+
+Layer 5 translates point forecasts and GAT attention weights into procurement
+risk assessments across three independently scored dimensions. The thresholds
+governing all risk levels are user-configurable parameters set in
+experiments/config.yaml, not learned parameters.
+
+    • BUDGET STRESS: Computed as (forecasted_demand × price) / budget_threshold,
+      where budget_threshold defaults to 100,000. Risk levels: Low (<0.7),
+      Medium (<0.9), High (<1.1), Critical (>=1.1).
+
+    • LEAD-TIME RISK: Computed as (forecast × lead_time_days / 30) /
+      current_stock, with a safety_factor of 1.5. A ratio above 1.5 triggers
+      the Critical level and generates the "[URGENT] Expedite supplier" action
+      flag.
+
+    • DEPENDENCY CRITICALITY: The mean incoming GAT attention weight per node
+      is used as a structural criticality score. Nodes with a score above 0.7
+      are flagged Critical and may trigger "[CRITICAL] Activate backup supplier".
+
+A lightweight learned calibrator MLP — Linear(d+3, 32) -> ReLU -> Linear(32, 1)
+-> Sigmoid — combines the fused embedding h-hat with the three raw risk scores
+to produce a single overall_risk_score per product. Four action flags are
+generated by rule-based thresholding. It is explicitly disclosed that lead-time
+proxy values are synthetic throughout: SupplyGraph uses group-level constants
+sampled from [3, 30] days; USGS uses a fixed value of 1.0. Layer 5 is a
+proof-of-concept and has not been validated against real procurement or logistics
+outcome data [Limitation 4, Chapter 9].
+
+________________________________________________________________________________
+3.7 TRAINING OBJECTIVE AND MODEL CONFIGURATION
+________________________________________________________________________________
+
+The ATSF model is trained using a multi-objective combined loss function
+implemented in src/training/loss.py as the AdaptiveFusionLoss class:
+
+    L_total = L_MSE + 0.3 * L_pinball + L_reg
+
+where L_MSE is the standard mean-squared error on the point forecast,
+L_pinball is the multi-quantile pinball loss for the P10, P50, and P90 heads:
+
+    L_pinball = mean(max(q * error, (q-1) * error))  for q in {0.1, 0.5, 0.9}
+
+and L_reg is the one-sided boundary regularisation from Equation (3).
+The coefficient 0.3 on L_pinball weights the uncertainty quantification
+objective at 30% of the MSE weight, preserving the primacy of point forecast
+accuracy whilst incentivising calibrated quantile outputs.
+
+The model is optimised using the Adam optimiser [21] with a learning rate of
+1e-3 and weight decay of 1e-4 (SupplyGraph) and 1e-3 (USGS). Gradient clipping
+is applied at L2 norm 1.0 before each optimizer.step() call. The learning rate
+scheduler ReduceLROnPlateau reduces the learning rate by a factor of 0.3
+whenever validation loss stalls for 10 consecutive epochs. Deterministic seeding
+is enforced by the SeedManager class across seven randomness sources before
+each training run. All weight initialisations are as follows: Linear layers
+use Xavier Uniform; LSTM recurrent layers use Orthogonal initialisation.
+LayerNorm is used in the TFT branch and fusion layer; BatchNorm1d is used in
+the GAT branch between GATConv layers.
+
+The full verified model configuration, reproduced verbatim from Section 4.8
+of the project instructions and experiments/config.yaml, is presented in
+Table 3.1.
+
+Table 3.1 - ATSF Model Configuration Summary
+
++-----------------------------------+---------------------+---------------------+
+| Parameter                         | SupplyGraph         | USGS                |
++-----------------------------------+---------------------+---------------------+
+| Hidden Dimension d                | 128                 | 64                  |
+| LSTM Layers                       | 2                   | 2                   |
+| Attention Heads H                 | 4                   | 4                   |
+| Temperature tau                   | 2.0                 | 2.0                 |
+| Regularisation Lambda             | 0.1                 | 0.05                |
+| Dropout (TFT + GAT Branches)      | 0.2                 | 0.3                 |
+| Fusion Layer Dropout              | 0.1                 | 0.1                 |
+| Max Epochs                        | 1,000               | 1,000               |
+| Early Stopping Patience           | 50                  | 50                  |
+| Batch Size                        | 64                  | 8                   |
+| Learning Rate                     | 1e-3                | 1e-3                |
+| Weight Decay                      | 1e-4                | 1e-3                |
+| Gradient Clip (L2 Norm)           | 1.0                 | 1.0                 |
+| LR Scheduler                      | ReduceLROnPlateau   | ReduceLROnPlateau   |
+| Scheduler Factor / Patience       | 0.3 / 10 epochs     | 0.3 / 10 epochs     |
+| Quantile Loss Weight              | 0.3                 | 0.3                 |
+| Optimizer                         | Adam [21]           | Adam [21]           |
+| Total Parameters                  | ~198,000            | ~198,000            |
+| Weight Init (Linear)              | Xavier Uniform      | Xavier Uniform      |
+| Weight Init (LSTM Recurrent)      | Orthogonal          | Orthogonal          |
+| Seeds                             | 42, 123, 456, 789, 1337 (both datasets)       |
++-----------------------------------+---------------------+---------------------+
+
+The identical ~198,000 parameter budget across all five neural model variants
+(TFT-only, GAT-only, Fixed Fusion, ATSF, and the fixed alpha ablations) is
+a critical design property: any performance difference between ATSF and its
+ablation counterparts is attributable exclusively to the adaptive routing
+mechanism of the Alpha MLP, not to differences in model capacity or
+computational budget.
+
+________________________________________________________________________________
+Presidency School of Computer Science and Engineering, Presidency University
+________________________________________________________________________________

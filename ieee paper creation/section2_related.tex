@@ -1,0 +1,60 @@
+% =====================================================================
+% SECTION II — RELATED WORK
+% Uses ONLY the 25 verified references from IEEE_References_25.md
+% =====================================================================
+
+\section{Related Work}
+\label{sec:related}
+
+\textbf{Temporal forecasting.}
+Lim et al.~\cite{lim2021tft} introduced Temporal Fusion
+Transformers (TFT) with interpretable variable selection and
+multi-horizon quantile heads---the architecture underpinning our
+temporal branch. Hochreiter and Schmidhuber~\cite{hochreiter1997lstm}
+established long short-term memory networks as the foundation for
+sequential demand modeling. Makridakis et
+al.~\cite{makridakis2022m5} benchmarked 61 forecasting methods
+on 100{,}000 time series and confirmed WAPE and SMAPE as the
+most robust metrics for zero-inflated demand. Hosseinnia and
+Ghahnavieh~\cite{hosseinnia2023} survey deep learning in supply
+chain management, confirming the persistent gap between research
+accuracy and operational deployment.
+
+\textbf{Graph neural networks for relational forecasting.}
+Graph Attention Networks~\cite{velickovic2018gat} enable
+attention-weighted structural aggregation over irregular topologies.
+Kipf and Welling~\cite{kipf2017gcn} and Hamilton et
+al.~\cite{hamilton2017graphsage} established the spectral and
+inductive foundations of graph representation learning.
+Jin et al.~\cite{jin2024survey} comprehensively survey GNNs
+for time-series forecasting and classification; Jiang and
+Luo~\cite{jiang2022gnn} synthesise spatio-temporal graph models
+for traffic forecasting. Kosasih and
+Brintrup~\cite{kosasih2022supply} show that GNNs recover latent
+supply dependencies invisible to tabular models. Our GAT branch
+extends this with typed attention across 4~(SupplyGraph) and
+15~(USGS) heterogeneous edge relations.
+
+\textbf{Hybrid temporal-graph models.}
+Graph WaveNet~\cite{wu2019gwn} combines dilated causal convolution
+with an adaptive graph convolution matrix, demonstrating that
+learned graph structure outperforms fixed topology on traffic
+forecasting. MST-GAT~\cite{ding2023mstgat} fuses spatial-temporal
+signals via a multi-modal graph attention mechanism; Wu et
+al.~\cite{wu2021gnn} provide a comprehensive taxonomy of GNN
+architectures including temporal graph variants. Wasi et
+al.~\cite{wasi2024gnn} benchmark GNNs on six supply-chain tasks,
+showing a 10--30\% improvement over classical baselines. None of
+these models learn a \emph{per-instance}, context-conditioned
+modality weight between temporal and structural branches.
+
+\textbf{Uncertainty and interpretability.}
+Wen et al.~\cite{wen2017quantile} introduced multi-horizon
+quantile recurrent forecasters; Gneiting and
+Raftery~\cite{gneiting2007scoring} establish the theoretical
+foundation for calibrated interval scoring. Lundberg and
+Lee~\cite{lundberg2017shap} argue for post-hoc attribution; our
+$\alpha$ trajectory provides built-in training-time
+interpretability without additional explanation passes. The
+IEA~\cite{iea2024minerals} documents critical mineral demand
+surges that motivate forecast-driven procurement planning.

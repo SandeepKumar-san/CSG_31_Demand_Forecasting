@@ -1,0 +1,99 @@
+% =====================================================================
+% MAIN.TEX — Adaptive Temporal-Structural Fusion Model
+% IEEE Transactions on Neural Networks and Learning Systems
+% Target: 4–5 pages, IEEEtran double-column
+% =====================================================================
+
+\documentclass[journal,compsoc]{IEEEtran}
+
+% ── Packages ──────────────────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{balance}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,arrows.meta,fit,backgrounds,calc}
+
+% ── Path for figures ──────────────────────────────────────────────
+\graphicspath{{../results/}{./figures/}}
+
+% =====================================================================
+\begin{document}
+
+% ── Title & Authors ───────────────────────────────────────────────
+\title{Adaptive Temporal-Structural Fusion Model for\\
+       Mineral Commodity Demand Forecasting}
+
+\author{[Author names withheld for review]}
+
+\maketitle
+
+% ── Abstract ──────────────────────────────────────────────────────
+\input{abstract}
+
+\begin{IEEEkeywords}
+Demand forecasting, graph attention networks, temporal fusion
+transformer, adaptive fusion, mineral commodities, supply chain,
+uncertainty quantification.
+\end{IEEEkeywords}
+
+% ── Sections ──────────────────────────────────────────────────────
+\input{section1_introduction}
+\input{section2_related}
+\input{section3_problem}
+\input{section4_methodology}
+
+% ── Figure 1 — Architecture ───────────────────────────────────────
+\begin{figure}[!t]
+  \centering
+  \resizebox{\columnwidth}{!}{%
+    \input{fig1_architecture}%
+  }
+  \caption{Proposed ATSF architecture. The TFT branch processes
+           temporal sequences; the GAT branch encodes typed
+           inter-commodity graph structure. The adaptive fusion
+           layer learns scalar weight $\alpha$ conditioned on
+           material type and forecast horizon. Dashed box: rule-based
+           risk scoring layer (Layer~5, not learned).}
+  \label{fig:arch}
+\end{figure}
+
+\input{section5_setup}
+\input{section6_results}
+
+% ── Figure 2 — Alpha trajectory ───────────────────────────────────
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig2_alpha_trajectory}
+  \caption{Fusion weight $\alpha$ evolution across five random seeds.
+           \textbf{(a) SupplyGraph:} $\alpha$ rapidly converges to
+           ${\approx}0.92$ within four epochs and narrows to a tight
+           band (${\pm}$1 std), indicating unambiguous temporal
+           dominance on daily FMCG data. \textbf{(b) USGS Mineral:}
+           $\alpha$ oscillates throughout training with a wide band,
+           settling near equal fusion ($0.489{\pm}0.197$), reflecting
+           balanced temporal-structural contribution in the annual
+           low-data regime. Dashed line: equal fusion ($\alpha{=}0.5$).}
+  \label{fig:alpha}
+\end{figure}
+
+\input{section7_discussion}
+\input{section8_conclusion}
+
+% Balance final columns
+\IEEEtriggeratref{24}
+\balance
+
+% ── References ────────────────────────────────────────────────────
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

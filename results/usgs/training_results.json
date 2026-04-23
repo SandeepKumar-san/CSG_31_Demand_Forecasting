@@ -1,0 +1,10 @@
+{
+  "dataset": "usgs",
+  "seed": 1337,
+  "best_val_loss": 0.45077036833390594,
+  "train_loss": 0.06035110878292471,
+  "val_loss": 0.6691909108776599,
+  "epochs_trained": 70,
+  "total_time": 82.28516340255737,
+  "n_parameters": 248501
+}

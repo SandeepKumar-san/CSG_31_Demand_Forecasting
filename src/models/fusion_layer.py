@@ -8,7 +8,7 @@ Mechanism:
   - Material type embedding (8 categories → 16 dim)
   - Forecast horizon embedding (4 horizons → 16 dim)
   - Cross-attention between temporal and structural embeddings
-  - Alpha predictor MLP: [h_temporal, h_structural, mat_emb, hor_emb] → alpha
+  - Alpha predictor MLP: [h_temporal, h_structural, mat_emb, hor_emb] -> alpha
   - Fusion: fused = alpha * h_temporal + (1 - alpha) * h_structural
 
 Alpha values are stored for interpretability and visualization.
@@ -28,8 +28,8 @@ class AdaptiveFusionLayer(nn.Module):
       2. Forecast horizon (short-term vs long-term prediction)
       3. Current input signals (temporal and structural embeddings)
 
-    When alpha → 1.0: model trusts temporal (TFT) signal more.
-    When alpha → 0.0: model trusts structural (GAT) signal more.
+    When alpha -> 1.0: model trusts temporal (TFT) signal more.
+    When alpha -> 0.0: model trusts structural (GAT) signal more.
 
     Args:
         config: Configuration dictionary with 'model' and 'model.fusion' sections.
@@ -37,24 +37,23 @@ class AdaptiveFusionLayer(nn.Module):
 
     def __init__(self, config: dict) -> None:
         super().__init__()
-        self.hidden_dim = config.get("model", {}).get("hidden_dim", 64)
-        fusion_cfg = config.get("model", {}).get("fusion", {})
-        self.num_material_types = fusion_cfg.get("num_material_types", 8)
-        self.num_horizons = fusion_cfg.get("num_horizons", 4)
-        mat_embed_dim = fusion_cfg.get("material_embed_dim", 16)
-        hor_embed_dim = fusion_cfg.get("horizon_embed_dim", 16)
+        self.hidden_dim = config["model"]["hidden_dim"]
+        fusion_cfg = config["model"]["fusion"]
+        self.num_material_types = fusion_cfg["num_material_types"]
+        self.num_horizons = fusion_cfg["num_horizons"]
+        mat_embed_dim = fusion_cfg["material_embed_dim"]
+        hor_embed_dim = fusion_cfg["horizon_embed_dim"]
 
         # ---- Context Embeddings ----
         self.material_embed = nn.Embedding(self.num_material_types, mat_embed_dim)
         self.horizon_embed = nn.Embedding(self.num_horizons, hor_embed_dim)
 
-        # ---- Cross-Attention (optional enrichment) ----
-        # Temporal attends to structural and vice versa
-        self.cross_attention = nn.MultiheadAttention(
-            embed_dim=self.hidden_dim,
-            num_heads=4,
-            dropout=0.1,
-            batch_first=True,
+        # ---- Temporal Projection (semantic alignment) ----
+        # Align temporal representation to structural space before alpha prediction
+        self.temporal_proj = nn.Sequential(
+            nn.Linear(self.hidden_dim, self.hidden_dim),
+            nn.LayerNorm(self.hidden_dim),
+            nn.ReLU(),
         )
 
         # ---- Alpha Predictor MLP ----
@@ -67,7 +66,7 @@ class AdaptiveFusionLayer(nn.Module):
             nn.Linear(self.hidden_dim, self.hidden_dim // 2),
             nn.ReLU(),
             nn.Linear(self.hidden_dim // 2, 1),
-            nn.Sigmoid(),  # alpha ∈ [0, 1]
+            # Sigmoid removed from Sequential to allow for temperature scaling below
         )
 
         # ---- Post-fusion projection ----
@@ -100,21 +99,21 @@ class AdaptiveFusionLayer(nn.Module):
         z_material = self.material_embed(material_type)   # [batch, mat_embed_dim]
         z_horizon = self.horizon_embed(horizon)            # [batch, hor_embed_dim]
 
-        # ---- Cross-attention enrichment ----
-        # Temporal embedding enriched by structural context
-        h_t_enriched, _ = self.cross_attention(
-            h_temporal.unsqueeze(1),    # query  [B, 1, H]
-            h_structural.unsqueeze(1),  # key    [B, 1, H]
-            h_structural.unsqueeze(1),  # value  [B, 1, H]
-        )
-        h_t_enriched = h_t_enriched.squeeze(1) + h_temporal  # Residual [B, H]
+        # ---- Temporal enrichment (semantic alignment) ----
+        # Project temporal embedding into same space as structural for better alpha prediction
+        h_t_enriched = self.temporal_proj(h_temporal) + h_temporal  # Residual alignment
 
         # ---- Predict alpha ----
         fusion_input = torch.cat(
             [h_t_enriched, h_structural, z_material, z_horizon], dim=-1
         )  # [batch, 2*H + mat_dim + hor_dim]
 
-        alpha = self.alpha_mlp(fusion_input)  # [batch, 1]
+        alpha_logits = self.alpha_mlp(fusion_input)  # [batch, 1]
+        
+        # Temperature-scaled sigmoid to prevent gradient saturation at 0.0 or 1.0
+        # Prevents alpha from drifting into flat-gradient territory and getting stuck
+        temperature = 2.0
+        alpha = torch.sigmoid(alpha_logits / temperature)
 
         # ---- Adaptive fusion ----
         # fused = alpha * temporal + (1 - alpha) * structural

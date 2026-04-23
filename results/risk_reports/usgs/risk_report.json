@@ -1,0 +1,1366 @@
+{
+  "ABRASIVES (MANUFACTURED)": {
+    "forecast_volume": 78602.51,
+    "alpha": 0.142,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "ALUMINA": {
+    "forecast_volume": 804.13,
+    "alpha": 0.631,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "ALUMINUM": {
+    "forecast_volume": 1391.32,
+    "alpha": 0.537,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "ANTIMONY": {
+    "forecast_volume": 2405.58,
+    "alpha": 0.525,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "ARGON": {
+    "forecast_volume": 0.0,
+    "alpha": 0.168,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "ARSENIC": {
+    "forecast_volume": 0.0,
+    "alpha": 0.313,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "ASBESTOS": {
+    "forecast_volume": 0.0,
+    "alpha": 0.468,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "BARITE": {
+    "forecast_volume": 2204.82,
+    "alpha": 0.31,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "BAUXITE": {
+    "forecast_volume": 0.0,
+    "alpha": 0.457,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "BERYLLIUM": {
+    "forecast_volume": 192.24,
+    "alpha": 0.568,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "BISMUTH": {
+    "forecast_volume": 80.0,
+    "alpha": 0.427,
+    "budget_risk": "Medium",
+    "budget_stress": 0.8,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "BORON": {
+    "forecast_volume": 0.0,
+    "alpha": 0.411,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "BROMINE": {
+    "forecast_volume": 0.0,
+    "alpha": 0.388,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "CADMIUM": {
+    "forecast_volume": 283.24,
+    "alpha": 0.386,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "CEMENT": {
+    "forecast_volume": 83601.16,
+    "alpha": 0.328,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "CERIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.157,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "CESIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.286,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "CHROMIUM": {
+    "forecast_volume": 122.82,
+    "alpha": 0.347,
+    "budget_risk": "Critical",
+    "budget_stress": 1.228,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "CLAYS": {
+    "forecast_volume": 7360.15,
+    "alpha": 0.162,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "COBALT": {
+    "forecast_volume": 1229.62,
+    "alpha": 0.543,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "COPPER": {
+    "forecast_volume": 545.35,
+    "alpha": 0.614,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "DIAMOND (BORT, GRIT, AND DUST AND POWDER; NATURAL AND SYNTHETIC)": {
+    "forecast_volume": 79.76,
+    "alpha": 0.301,
+    "budget_risk": "Medium",
+    "budget_stress": 0.798,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "DIAMOND (INDUSTRIAL)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.647,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "DIAMOND (STONES, NATURAL AND SYNTHETIC)": {
+    "forecast_volume": 0.08,
+    "alpha": 0.303,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "DIATOMITE": {
+    "forecast_volume": 804.1,
+    "alpha": 0.102,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "DYSPROSIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.145,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "ERBIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.159,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "EUROPIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.157,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "FELDSPAR": {
+    "forecast_volume": 444.33,
+    "alpha": 0.15,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "FELDSPAR AND NEPHELINE SYENITE": {
+    "forecast_volume": 0.0,
+    "alpha": 0.149,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "FLUORSPAR": {
+    "forecast_volume": 43.24,
+    "alpha": 0.294,
+    "budget_risk": "Low",
+    "budget_stress": 0.432,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "GADOLINIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.141,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "GALLIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.416,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "GARNET (INDUSTRIAL)": {
+    "forecast_volume": 116490.78,
+    "alpha": 0.695,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "GEMSTONES": {
+    "forecast_volume": 34.67,
+    "alpha": 0.522,
+    "budget_risk": "Low",
+    "budget_stress": 0.347,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "GERMANIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.472,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "GOLD": {
+    "forecast_volume": 148.02,
+    "alpha": 0.385,
+    "budget_risk": "Critical",
+    "budget_stress": 1.48,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "GRANITE ONLY": {
+    "forecast_volume": 0.0,
+    "alpha": 0.141,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "GRAPHITE (NATURAL)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.596,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "GROUND HIGH-PURITY QUARTZ": {
+    "forecast_volume": 0.0,
+    "alpha": 0.148,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "GYPSUM": {
+    "forecast_volume": 18659.87,
+    "alpha": 0.396,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "HAFNIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.131,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "HELIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.159,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "HOLMIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.154,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "INDIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.433,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "INDUSTRIAL CULTURED QUARTZ CRYSTAL": {
+    "forecast_volume": 0.0,
+    "alpha": 0.114,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "IODINE": {
+    "forecast_volume": 0.0,
+    "alpha": 0.335,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "IRIDIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.313,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "IRON AND STEEL": {
+    "forecast_volume": 67.4,
+    "alpha": 0.262,
+    "budget_risk": "Low",
+    "budget_stress": 0.674,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "IRON AND STEEL SCRAP": {
+    "forecast_volume": 33.4,
+    "alpha": 0.27,
+    "budget_risk": "Low",
+    "budget_stress": 0.334,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "IRON AND STEEL SLAG": {
+    "forecast_volume": 15.73,
+    "alpha": 0.28,
+    "budget_risk": "Low",
+    "budget_stress": 0.157,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "IRON ORE": {
+    "forecast_volume": 24899.98,
+    "alpha": 0.396,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "IRON OXIDE PIGMENTS": {
+    "forecast_volume": 0.0,
+    "alpha": 0.558,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "KRYPTON": {
+    "forecast_volume": 0.0,
+    "alpha": 0.626,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "KYANITE AND RELATED MINERALS": {
+    "forecast_volume": 84655.76,
+    "alpha": 0.108,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "LANTHANUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.148,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "LEAD": {
+    "forecast_volume": 518.67,
+    "alpha": 0.536,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "LIME": {
+    "forecast_volume": 15884.28,
+    "alpha": 0.181,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "LITHIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.595,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "LUTETIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.144,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "MAGNESIUM COMPOUNDS": {
+    "forecast_volume": 414.13,
+    "alpha": 0.57,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "MAGNESIUM METAL": {
+    "forecast_volume": 107.45,
+    "alpha": 0.535,
+    "budget_risk": "High",
+    "budget_stress": 1.074,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "MANGANESE": {
+    "forecast_volume": 0.0,
+    "alpha": 0.462,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "MERCURY": {
+    "forecast_volume": 103.0,
+    "alpha": 0.16,
+    "budget_risk": "High",
+    "budget_stress": 1.03,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "MICA (NATURAL)": {
+    "forecast_volume": 45374.83,
+    "alpha": 0.668,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "MOLYBDENUM": {
+    "forecast_volume": 36977.65,
+    "alpha": 0.286,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "NEODYMIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.126,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "NEON": {
+    "forecast_volume": 0.0,
+    "alpha": 0.713,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "NEON, KRYPTON, AND XENON ": {
+    "forecast_volume": 0.0,
+    "alpha": 0.147,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "NEPHELINE SYENITE": {
+    "forecast_volume": 0.0,
+    "alpha": 0.612,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "NICKEL": {
+    "forecast_volume": 14075.33,
+    "alpha": 0.607,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "NIOBIUM (COLUMBIUM)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.468,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "NITROGEN (FIXED)\u0097AMMONIA": {
+    "forecast_volume": 13505.64,
+    "alpha": 0.149,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "OSMIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.143,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "PALLADIUM": {
+    "forecast_volume": 10307.88,
+    "alpha": 0.274,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "PEAT": {
+    "forecast_volume": 329.41,
+    "alpha": 0.602,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "PERLITE": {
+    "forecast_volume": 697.96,
+    "alpha": 0.667,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "PHOSPHATE ROCK": {
+    "forecast_volume": 19475.77,
+    "alpha": 0.394,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "PLATINUM": {
+    "forecast_volume": 3158.73,
+    "alpha": 0.34,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "PLATINUM-GROUP METALS": {
+    "forecast_volume": 0.0,
+    "alpha": 0.138,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "POTASH": {
+    "forecast_volume": 436.55,
+    "alpha": 0.317,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "PRASEODYMIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.15,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "PUMICE AND PUMICITE": {
+    "forecast_volume": 403.24,
+    "alpha": 0.11,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "QUARTZ (HIGH-PURITY AND INDUSTRIAL CULTURED CRYSTAL)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.29,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "RARE EARTHS": {
+    "forecast_volume": 21654.34,
+    "alpha": 0.52,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "RARE EARTHS (HEAVY)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.303,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "RHENIUM": {
+    "forecast_volume": 9414.51,
+    "alpha": 0.368,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "RHODIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.391,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "RUBIDIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.165,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "RUTHENIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.145,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "SALT": {
+    "forecast_volume": 40107.21,
+    "alpha": 0.373,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "SAMARIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.153,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "SAND AND GRAVEL (CONSTRUCTION)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.171,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "SAND AND GRAVEL (INDUSTRIAL)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.214,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "SCANDIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.152,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "SELENIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.359,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "SILICON": {
+    "forecast_volume": 0.0,
+    "alpha": 0.301,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "SILVER": {
+    "forecast_volume": 1140.93,
+    "alpha": 0.49,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "SODA ASH": {
+    "forecast_volume": 11447.12,
+    "alpha": 0.164,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "STONE (CRUSHED)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.11,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "STONE (DIMENSION)": {
+    "forecast_volume": 0.0,
+    "alpha": 0.191,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "STRONTIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.428,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "SULFUR": {
+    "forecast_volume": 5577.85,
+    "alpha": 0.154,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "TALC AND PYROPHYLLITE": {
+    "forecast_volume": 493.61,
+    "alpha": 0.687,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "TANTALUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.317,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "TELLURIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.529,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "TERBIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.14,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "THALLIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.427,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "THORIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.408,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "TIO2 PIGMENT": {
+    "forecast_volume": 0.0,
+    "alpha": 0.147,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "TIN": {
+    "forecast_volume": 8575.95,
+    "alpha": 0.3,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "TITANIUM MINERAL CONCENTRATES": {
+    "forecast_volume": 103.37,
+    "alpha": 0.552,
+    "budget_risk": "High",
+    "budget_stress": 1.034,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "TITANIUM SPONGE METAL": {
+    "forecast_volume": 0.0,
+    "alpha": 0.753,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "TUNGSTEN": {
+    "forecast_volume": 0.0,
+    "alpha": 0.564,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "VANADIUM": {
+    "forecast_volume": 5981.26,
+    "alpha": 0.311,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "VERMICULITE": {
+    "forecast_volume": 100.0,
+    "alpha": 0.713,
+    "budget_risk": "High",
+    "budget_stress": 1.0,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "WOLLASTONITE": {
+    "forecast_volume": 0.0,
+    "alpha": 0.184,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "XENON": {
+    "forecast_volume": 0.0,
+    "alpha": 0.616,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "YTTERBIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.164,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "YTTRIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.201,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "ZEOLITES (NATURAL)": {
+    "forecast_volume": 78428.23,
+    "alpha": 0.149,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "ZINC": {
+    "forecast_volume": 476.62,
+    "alpha": 0.562,
+    "budget_risk": "Critical",
+    "budget_stress": 1.5,
+    "leadtime_score": 1.25,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u26a0\ufe0f Review budget allocation."
+    ]
+  },
+  "ZIRCONIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.4,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  },
+  "ZIRCONIUM AND HAFNIUM": {
+    "forecast_volume": 0.0,
+    "alpha": 0.142,
+    "budget_risk": "Low",
+    "budget_stress": 0.01,
+    "leadtime_score": 1.0,
+    "leadtime_risk": "High",
+    "actions": [
+      "\u2705 All risk levels acceptable."
+    ]
+  }
+}
