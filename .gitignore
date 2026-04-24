@@ -57,3 +57,8 @@ results/usgs/checkpoints/
 # Large source PDF — 17.5 MB
 # To track with Git LFS instead, run: git lfs track "*.pdf"
 data/raw/usgs/mcs2026.pdf
+
+ieee paper creation/
+report creation/
+Presentation_Guide.md
+project_files.zip
